@@ -1,0 +1,34 @@
+[
+    {
+        "nombre": "SALA AMARILLA",
+        "capacidad_ninos": 35,
+        "capacidad_adultos": 25,
+        "descripcion": "Esta sala cuenta con una capacidad para [N] niños y [A] adultos, está ambientada con colores rojos, globos y personajes animados.",
+        "imagen": "./recursos/imagenes/sala amarilla.jpg",
+        "alt_imagen": "Sala amarilla de fiestas"
+    },
+    {
+        "nombre": "SALA ROJA",
+        "capacidad_ninos": 25,
+        "capacidad_adultos": 15,
+        "descripcion": "Esta sala cuenta con una capacidad para [N] niños y [A] adultos, está ambientada con colores amarillos y personajes animados.",
+        "imagen": "./recursos/imagenes/sala roja.jpg",
+        "alt_imagen": "Sala roja de fiestas"
+    },
+    {
+        "nombre": "SALA OESTE",
+        "capacidad_ninos": 45,
+        "capacidad_adultos": 30,
+        "descripcion": "Esta sala cuenta con una capacidad para [N] niños y [A] adultos, está ambientada en el lejano oeste.",
+        "imagen": "./recursos/imagenes/sala oeste.jpg",
+        "alt_imagen": "Sala temática del lejano oeste"
+    },
+    {
+        "nombre": "SALA CARTOON",
+        "capacidad_ninos": 35,
+        "capacidad_adultos": 25,
+        "descripcion": "Esta sala cuenta con una capacidad para [N] niños y [A] adultos, está ambientada en Cartoon Network.",
+        "imagen": "./recursos/imagenes/Imagen de WhatsApp 2025-11-07 a las 16.16.28_8abff174.jpg",
+        "alt_imagen": "Sala temática de Cartoon Network"
+    }
+]

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión - Diverty Park</title>
+  <link rel="stylesheet" href="./recursos/css/estilos.css">
+  <link rel="stylesheet" href="./recursos/css/login.css">
+  <link rel="icon" href="./recursos/imagenes/payasio.png" type="image/png">
+</head>
+
+<body class="fondo-login">
+
+  <div class="tarjeta-login">
+    <img src="./recursos/imagenes/payasio.png" alt="Logo Diverty Park" class="logo-login">
+    <h1>Diverty Park</h1>
+    <p class="subtitulo-login">Panel de Administración</p>
+
+    <form id="formulario-login">
+
+      <div class="campo-login">
+        <label for="nombre_usuario">Usuario</label>
+        <input
+          type="text"
+          id="nombre_usuario"
+          name="nombre_usuario"
+          placeholder="Ingresá tu usuario"
+          autocomplete="username"
+          required
+        >
+      </div>
+
+      <div class="campo-login">
+        <label for="contrasena">Contraseña</label>
+        <input
+          type="password"
+          id="contrasena"
+          name="contrasena"
+          placeholder="Ingresá tu contraseña"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+      <!-- Mensaje de error que aparece si el login falla -->
+      <p id="mensaje-error" class="error-login" style="display: none;"></p>
+
+      <button type="submit" id="btn-ingresar" class="btn-primario btn-login">Ingresar</button>
+
+    </form>
+
+    <a href="./index.html" class="volver-inicio">← Volver al sitio</a>
+  </div>
+
+  <script src="./recursos/js/login.js"></script>
+</body>
+
+</html>
