@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración - Diverty Park</title>
+  <!-- Enlazamos la hoja de estilos principal -->
+  <link rel="stylesheet" href="./recursos/css/estilos.css">
+  <!-- Enlazamos la hoja de estilos del panel de administración -->
+  <link rel="stylesheet" href="./recursos/css/admin.css">
+  <link rel="icon" href="./recursos/imagenes/payasio.png" type="image/png">
+</head>
+
+<body>
+
+  <!-- HEADER (Igual al de las otras páginas del sitio para coherencia visual) -->
+  <header class="encabezado-principal">
+    <a href="./index.html"><img src="./recursos/imagenes/payasio.png" alt="Logo Diverty Park" class="logo"></a>
+    <nav>
+      <ul>
+        <li><a href="index.html">INICIO</a></li>
+        <li><a href="salas.html">SALAS</a></li>
+        <li><a href="reservas.html">RESERVAS</a></li>
+        <li><a href="admin.html" class="active">ADMINISTRACIÓN</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- SECCIÓN PRINCIPAL DEL DASHBOARD -->
+  <main class="contenedor-admin">
+    <div class="encabezado-seccion">
+      <div>
+        <h1>Panel de Administración</h1>
+        <p class="subtitulo">Gestiona las salas temáticas y servicios de Diverty Park</p>
+      </div>
+      <!-- Botón para abrir el Modal de creación -->
+      <div style="display: flex; gap: 0.8rem; align-items: center;">
+        <span id="bienvenida-usuario" style="font-size: 0.9rem; color: #555;"></span>
+        <button id="btn-nueva-sala" class="btn-primario">+ Nueva Sala</button>
+        <button id="btn-cerrar-sesion" class="btn-secundario">Cerrar Sesión</button>
+      </div>
+    </div>
+
+    <!-- TARJETAS DE ESTADÍSTICAS (Añade valor y estética premium) -->
+    <div class="tarjetas-stats">
+      <div class="tarjeta-stat">
+        <span class="icono-tarjeta">🏫</span>
+        <div class="datos-tarjeta">
+          <h3 id="stat-total-salas">0</h3>
+          <p>Salas Totales</p>
+        </div>
+      </div>
+      <div class="tarjeta-stat">
+        <span class="icono-tarjeta">🧒</span>
+        <div class="datos-tarjeta">
+          <h3 id="stat-capacidad-ninos">0</h3>
+          <p>Capacidad Niños</p>
+        </div>
+      </div>
+      <div class="tarjeta-stat">
+        <span class="icono-tarjeta">👤</span>
+        <div class="datos-tarjeta">
+          <h3 id="stat-capacidad-adultos">0</h3>
+          <p>Capacidad Adultos</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENEDOR DE LA TABLA CRUD -->
+    <div class="tabla-contenedor">
+      <table class="tabla-crud">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Capacidad Niños</th>
+            <th>Capacidad Adultos</th>
+            <th>Precio</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpo-tabla-salas">
+          <!-- Las salas cargadas dinámicamente desde el JS irán aquí -->
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 30px; color: #666;">Cargando salas...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- FORMULARIO MODAL (Alta y Modificación) -->
+  <div id="modal-sala" class="modal">
+    <div class="modal-contenido">
+      <div class="modal-cabecera">
+        <h2 id="modal-titulo">Agregar Nueva Sala</h2>
+        <span id="btn-cerrar-modal" class="cerrar-modal">&times;</span>
+      </div>
+      <div class="modal-cuerpo">
+        <form id="formulario-sala" class="formulario-reserva">
+          <!-- Campo oculto para guardar el ID cuando estemos editando -->
+          <input type="hidden" id="sala-id" name="id">
+
+          <label for="nombre">Nombre de la Sala</label>
+          <input type="text" id="nombre" name="nombre" placeholder="Ej: SALA AZUL" required>
+          <span class="error-mensaje" id="error-nombre"></span>
+
+          <div class="form-fila">
+            <div class="form-grupo">
+              <label for="capacidad_ninos">Cap. Niños</label>
+              <input type="number" id="capacidad_ninos" name="capacidad_ninos" min="0" required>
+            </div>
+            <div class="form-grupo">
+              <label for="capacidad_adultos">Cap. Adultos</label>
+              <input type="number" id="capacidad_adultos" name="capacidad_adultos" min="0" required>
+            </div>
+            <div class="form-grupo">
+              <label for="precio">Precio ($)</label>
+              <input type="number" id="precio" name="precio" min="0" step="0.01" required>
+            </div>
+          </div>
+
+          <label for="descripcion">Descripción</label>
+          <textarea id="descripcion" name="descripcion" rows="3" placeholder="Describe la temática, colores y atracciones..." required></textarea>
+
+          <!-- Campo oculto para guardar la ruta de la imagen existente cuando se edita -->
+          <input type="hidden" id="imagen_existente" name="imagen_existente">
+
+          <div class="form-fila">
+            <div class="form-grupo-50">
+              <label for="imagen">Subir Foto de la Sala</label>
+              <input type="file" id="imagen" name="imagen" accept="image/*">
+              <div id="preview-imagen-contenedor" style="margin-top: 5px; display: none;">
+                <span style="font-size: 0.8em; color: #666;">Imagen actual: </span>
+                <span id="preview-imagen-nombre" style="font-size: 0.8em; font-weight: bold; color: #333; word-break: break-all;"></span>
+              </div>
+            </div>
+            <div class="form-grupo-50">
+              <label for="alt_imagen">Texto Alternativo (Alt)</label>
+              <input type="text" id="alt_imagen" name="alt_imagen" placeholder="Ej: Sala de color azul" required>
+            </div>
+          </div>
+
+          <div class="modal-acciones">
+            <button type="button" id="btn-cancelar" class="btn-secundario">Cancelar</button>
+            <button type="submit" id="btn-guardar" class="btn-primario">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIE DE PÁGINA (Igual al de las otras páginas para consistencia) -->
+  <footer>
+    <div class="columna">
+      <h3>Contacto</h3>
+      <address>
+        <ul>
+          <li>📧 jpmunoz1973@gmail.com</li>
+          <li>📱 +54 9 351 378 5678</li>
+        </ul>
+      </address>
+    </div>
+    <div class="columna">
+      <h3>Horarios</h3>
+      <address>
+        <ul>
+          <li>Lunes a Domingo<br>de 9:00 a 23:00 hs</li>
+        </ul>
+      </address>
+    </div>
+    <div class="columna">
+      <h3>Ubicación</h3>
+      <address>
+        <ul>
+          <li>Avenida Rafael Nuñez 6217, Córdoba, Argentina</li>
+        </ul>
+      </address>
+    </div>
+  </footer>
+
+  <!-- Script que maneja el CRUD y llamadas AJAX -->
+  <script type="module" src="./recursos/js/admin.js"></script>
+</body>
+
+</html>
