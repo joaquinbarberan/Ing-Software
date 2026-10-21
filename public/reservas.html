@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservas - Diverty Park</title>
+  <link rel="stylesheet" href="./recursos/css/estilos.css">
+  <link rel="icon" href="./recursos/imagenes/payasio.png" type="image/png">
+</head>
+
+<body>
+  <header class="encabezado-principal">
+    <a href="./index.html"><img src="./recursos/imagenes/payasio.png" alt="Logo Diverty Park" class="logo"></a>
+    <nav>
+      <ul>
+        <li><a href="index.html">INICIO</a></li>
+        <li><a href="salas.html">SALAS</a></li>
+        <li><a href="reservas.html">RESERVAS</a></li>
+        <li><a href="admin.html">ADMINISTRACIÓN</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="contenedor-reserva">
+
+    <div class="contenido-centrado-reserva">
+
+      <h1 class="titulo-reserva-central">Reservá tu Fiesta</h1>
+
+      <div class="formulario-caja">
+        <p class="descripcion">Completá los datos para reservar tu evento. ¡Te esperamos!</p>
+
+        <form id="formularioReserva" action="#" method="post" class="formulario-reserva">
+
+          <label for="nombre">Nombre y Apellido</label>
+          <input type="text" id="nombre" name="nombre" required>
+          <span class="error-mensaje" id="error-nombre"></span>
+
+          <label for="fecha">Fecha del evento</label>
+          <input type="date" id="fecha" name="fecha" required>
+          <span class="error-mensaje" id="error-fecha"></span>
+
+          <label for="hora">Hora</label>
+          <input type="time" id="hora" name="hora" required>
+
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" name="email" required>
+          <span class="error-mensaje" id="error-email"></span>
+
+          <label for="telefono">Teléfono</label>
+          <input type="tel" id="telefono" name="telefono" required>
+          <span class="error-mensaje" id="error-telefono"></span>
+
+          <label for="sala">Sala</label>
+          <select id="sala" name="sala" required>
+            <option value="">Seleccioná una sala</option>
+            <option value="cartoon">Sala Cartoon</option>
+            <option value="amarilla">Sala Amarilla</option>
+            <option value="roja">Sala Roja</option>
+            <option value="oeste">Sala Oeste</option>
+          </select>
+
+          <label for="comentarios">Comentarios</label>
+          <textarea id="comentarios" name="comentarios" rows="4"></textarea>
+
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="columna">
+      <h3>Contacto</h3>
+      <address>
+        <ul>
+          <li>📧 jpmunoz1973@gmail.com</li>
+          <li>📱 +54 9 351 378 5678</li>
+        </ul>
+      </address>
+    </div>
+
+    <div class="columna">
+      <h3>Horarios</h3>
+      <address>
+        <ul>
+          <li>Lunes a Domingo<br>de 9:00 a 23:00 hs</li>
+        </ul>
+      </address>
+    </div>
+
+    <div class="columna">
+      <h3>Ubicación</h3>
+      <address>
+        <ul>
+          <li>Avenida Rafael Nuñez 6217, Córdoba, Argentina</li>
+        </ul>
+      </address>
+    </div>
+  </footer>
+
+  <script type="module" src="./recursos/js/reservas.js"></script>
+
+</body>
+
+</html>

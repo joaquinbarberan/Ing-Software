@@ -1,0 +1,355 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #222;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f3f3f3;
+    color: #222;
+    margin: 0;
+}
+
+/* ====================== */
+/*  HEADER  */
+/* ===================== */
+
+.encabezado-principal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 60px;
+    background-color: white;
+    border-bottom: 3px solid #ccc;
+}
+
+.logo {
+    width: 80px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 50px;
+}
+
+nav a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #222;
+    font-style: italic;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: #d92332;
+}
+
+/* ==================================== */
+/* SECCIÓN INICIO  */
+/* ==================================== */
+
+.portada {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: url('../imagenes/fondo-cielo.png') center/cover no-repeat;
+    padding: 50px 80px;
+    color: black;
+    background-color: aqua;
+}
+
+.texto-portada {
+    text-align: left;
+    max-width: 50%;
+}
+
+.texto-portada h1 {
+    font-size: 48px;
+    font-weight: 900;
+    font-style: italic;
+}
+
+.texto-portada p {
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+.imagen-portada {
+    width: 40%;
+    border-radius: 10px;
+}
+
+.bienvenida {
+    background-color: #f0f0f0;
+    text-align: center;
+    padding: 40px 80px;
+
+}
+
+.bienvenida h2 {
+    color: #e83946;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.bienvenida p {
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: justify;
+    max-width: 900px;
+    margin: auto;
+    color: #222;
+}
+
+/* ==================================== */
+/*  SECCIÓN SALAS */
+/* ==================================== */
+
+.contenedor-salas {
+    background: url('../imagenes/fondo-cielo.png') center/cover no-repeat;
+    padding: 60px 80px;
+    /* MARGEN LATERAL DE 80PX */
+    color: #222;
+}
+
+.contenedor-salas h1 {
+    text-align: center;
+    color: white;
+    font-style: italic;
+    font-size: 36px;
+    text-shadow: 2px 2px 4px black;
+    margin-bottom: 10px;
+}
+
+.divisor-salas {
+    width: 80%;
+    margin: 20px auto;
+    border: 1px dashed white;
+}
+
+.salas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.sala {
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.sala:hover {
+    transform: scale(1.03);
+}
+
+.sala h2 {
+    text-align: center;
+    color: #222;
+    border-bottom: 2px solid #000;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.sala p {
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sala-imagen {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ==================================== */
+/*  FORMULARIO DE RESERVAS */
+/* ==================================== */
+
+.contenedor-reserva {
+
+    background: url('../imagenes/fondo-cielo.png') center/cover no-repeat;
+
+    padding: 50px 80px;
+    min-height: 90vh;
+    background-color: #f7f7f7;
+}
+
+.formulario-caja {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+    border: 3px solid #d05a61;
+    padding: 40px 50px;
+    max-width: 500px;
+    width: 100%;
+
+    margin: 0 auto;
+}
+
+.formulario-caja h1 {
+    text-align: center;
+    color: #d05a61;
+    margin-bottom: 15px;
+    font-style: italic;
+    text-shadow: 1px 1px 1px #888;
+}
+
+.formulario-caja .descripcion {
+    text-align: center;
+    background-color: #e9e9e9;
+    color: #555;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+}
+
+.formulario-reserva {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.formulario-reserva label {
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.formulario-reserva input,
+.formulario-reserva select,
+.formulario-reserva textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: border-color 0.2s ease;
+}
+
+.formulario-reserva input:focus,
+.formulario-reserva select:focus,
+.formulario-reserva textarea:focus {
+    border-color: #cf6b73;
+    outline: none;
+}
+
+.formulario-reserva button {
+    background-color: #d92332;
+    /* Rojo temático */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.formulario-reserva button:hover {
+    background-color: #e83946;
+}
+
+/* ==================================== */
+/*  VALIDACIÓN DE FORMULARIO */
+/* ==================================== */
+
+.error-mensaje {
+    color: #cc0000;
+    font-size: 0.85em;
+    margin-top: -10px;
+    margin-bottom: 10px;
+    display: block;
+    font-weight: bold;
+}
+
+.formulario-reserva input:invalid:not(:placeholder-shown),
+.formulario-reserva input.error,
+.formulario-reserva select.error {
+    border: 2px solid #cc0000 !important;
+}
+
+
+
+footer {
+    background-color: #d05a61;
+    color: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 30px 0;
+    margin-top: 50px;
+}
+
+footer h3 {
+    border-bottom: 2px solid white;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+
+
+
+@media (max-width: 800px) {
+
+    .encabezado-principal {
+        padding: 15px 30px;
+    }
+
+    nav ul {
+        gap: 20px;
+    }
+
+    .salas-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contenedor-salas,
+    .portada,
+    .contenedor-reserva {
+        padding: 40px 30px;
+
+    }
+
+    .sala {
+        padding: 20px;
+    }
+
+    .portada {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .texto-portada,
+    .imagen-portada {
+        max-width: 100%;
+        width: 100%;
+        text-align: center;
+    }
+
+    footer {
+        flex-direction: column;
+        padding: 20px 30px;
+        align-items: center;
+        text-align: center;
+    }
+
+    .columna {
+        margin-bottom: 15px;
+    }
+}

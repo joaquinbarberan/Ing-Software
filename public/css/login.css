@@ -1,0 +1,98 @@
+/* Estilos para la página de inicio de sesión */
+
+.fondo-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.tarjeta-login {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+.logo-login {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.tarjeta-login h1 {
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0.2rem 0;
+}
+
+.subtitulo-login {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 1.8rem;
+}
+
+.campo-login {
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.campo-login label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.4rem;
+}
+
+.campo-login input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.campo-login input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.error-login {
+  background: #fde8e8;
+  color: #c0392b;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.btn-login {
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+
+.volver-inicio {
+  display: block;
+  margin-top: 1.2rem;
+  font-size: 0.85rem;
+  color: #888;
+  text-decoration: none;
+}
+
+.volver-inicio:hover {
+  color: #667eea;
+}
