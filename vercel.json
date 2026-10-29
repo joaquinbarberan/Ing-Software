@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/recursos/:ruta*", "destination": "/:ruta*" },
+    { "source": "/api/:ruta*", "destination": "/api" },
+    { "source": "/salas", "destination": "/api" },
+    { "source": "/salas/:id", "destination": "/api" },
+    { "source": "/disponibilidad", "destination": "/api" }
+  ],
+  "crons": [
+    { "path": "/api/cron/expirar", "schedule": "0 9 * * *" }
+  ]
+}

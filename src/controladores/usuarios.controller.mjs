@@ -48,6 +48,7 @@ const usuarioControlador = {
       respuesta.cookie('token_acceso', token, {
         httpOnly: true,  // Protege contra ataques XSS
         sameSite: 'strict', // Protege contra ataques CSRF
+        secure: Boolean(process.env.VERCEL), // En Vercel (HTTPS) la cookie sólo viaja cifrada
         maxAge: 8 * 60 * 60 * 1000 // 8 horas en milisegundos
       });
 

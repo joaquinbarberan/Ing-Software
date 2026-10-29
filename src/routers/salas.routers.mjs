@@ -3,35 +3,64 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { nanoid } from 'nanoid';
-import mime from 'mime-type';
 import salaControlador from '../controladores/salas.controller.mjs';
 import { permitir } from '../middleware/permisos.mjs';
 
 const enrutador = express.Router();
 
 // 1. CONFIGURACIÓN DEL ALMACENAMIENTO DE MULTER
-// Configura dónde y con qué nombre guardar las imágenes subidas en el servidor.
-const almacenamiento = multer.diskStorage({
-  destination: function (peticion, archivo, callback) {
-    // Las imágenes se guardan en la carpeta pública del servidor
-    callback(null, path.join(path.dirname(fileURLToPath(import.meta.url)), '../../public/imagenes'));
-  },
-  filename: function (peticion, archivo, callback) {
-    // Obtenemos la extensión del archivo a partir de su tipo MIME (ej: image/png -> png)
-    const extension = mime.extension(archivo.mimetype);
-    // Generamos un identificador único usando nanoid() para evitar colisiones de nombres
-    const nombreImagen = `${nanoid()}.${extension}`;
-    callback(null, nombreImagen);
-  }
-});
+// En la compu las imágenes se guardan en public/imagenes.
+// En Vercel el disco es de sólo lectura, así que si está configurado Vercel Blob
+// (variable BLOB_READ_WRITE_TOKEN) la imagen se sube ahí y se guarda su URL pública.
+const usarBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
-// Inicializamos el middleware de Multer
+// Nombre único: nanoid() evita colisiones y la extensión sale del tipo MIME (ej: image/png -> png).
+// (La librería mime-type v5 ya no expone extension() sin su base de datos, por eso se resuelve acá.)
+const EXTENSIONES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg', 'image/avif': 'avif' };
+function nombreUnico(archivo) {
+  const extension = EXTENSIONES[archivo.mimetype] || archivo.mimetype.split('/')[1].replace(/[^a-z0-9]/gi, '');
+  return `${nanoid()}.${extension}`;
+}
+
+const almacenamiento = usarBlob
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination: function (peticion, archivo, callback) {
+        // Las imágenes se guardan en la carpeta pública del servidor
+        callback(null, path.join(path.dirname(fileURLToPath(import.meta.url)), '../../public/imagenes'));
+      },
+      filename: function (peticion, archivo, callback) {
+        callback(null, nombreUnico(archivo));
+      }
+    });
+
+// Inicializamos el middleware de Multer.
+// Límite de 4 MB: Vercel no acepta peticiones de más de 4,5 MB.
 const subirArchivo = multer({
-  storage: almacenamiento
+  storage: almacenamiento,
+  limits: { fileSize: 4 * 1024 * 1024 },
+  fileFilter: (peticion, archivo, callback) => callback(null, archivo.mimetype.startsWith('image/'))
 });
 
-// Middleware para procesar un único archivo cuyo campo en el formulario sea "imagen"
-const cargarImagen = subirArchivo.single('imagen');
+// Procesa un único archivo cuyo campo en el formulario sea "imagen".
+// Con Vercel Blob, además lo sube y deja la URL en peticion.file.url para el controlador.
+function cargarImagen(peticion, respuesta, siguiente) {
+  subirArchivo.single('imagen')(peticion, respuesta, async (error) => {
+    if (error || !usarBlob || !peticion.file) return siguiente(error);
+    try {
+      const { put } = await import('@vercel/blob');
+      const subida = await put(`salas/${nombreUnico(peticion.file)}`, peticion.file.buffer, {
+        access: 'public',
+        contentType: peticion.file.mimetype
+      });
+      peticion.file.url = subida.url;
+      siguiente();
+    } catch (errorSubida) {
+      console.error('Error al subir la imagen a Vercel Blob:', errorSubida);
+      respuesta.status(502).json({ error: 'No se pudo subir la imagen. Intentá de nuevo.' });
+    }
+  });
+}
 
 
 // 2. DEFINICIÓN DE RUTAS DEL CRUD

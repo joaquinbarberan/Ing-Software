@@ -46,7 +46,8 @@ const salaControlador = {
       let rutaImagen = './recursos/imagenes/payasio.png'; // Imagen por defecto si no suben ninguna
       if (archivo) {
         // Guardamos la ruta virtual que utiliza el frontend para mostrarla
-        rutaImagen = `./recursos/imagenes/${archivo.filename}`;
+        // Con Vercel Blob la imagen ya tiene una URL pública; en la compu se arma la ruta local
+        rutaImagen = archivo.url || `./recursos/imagenes/${archivo.filename}`;
       }
 
       // Convertimos los campos que vienen del formulario (en form-data todo viene como texto)
@@ -83,7 +84,8 @@ const salaControlador = {
       // De lo contrario, mantenemos la imagen existente que envía el formulario.
       let rutaImagen = cuerpo.imagen_existente;
       if (archivo) {
-        rutaImagen = `./recursos/imagenes/${archivo.filename}`;
+        // Con Vercel Blob la imagen ya tiene una URL pública; en la compu se arma la ruta local
+        rutaImagen = archivo.url || `./recursos/imagenes/${archivo.filename}`;
       }
 
       const datosSala = {

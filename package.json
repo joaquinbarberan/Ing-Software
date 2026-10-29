@@ -2,10 +2,10 @@
   "name": "final-aw",
   "version": "1.0.0",
   "description": "Sistema de gestión web para el salón de fiestas Diverty Park",
-  "main": "src/app.mjs",
+  "main": "src/servidor.mjs",
   "scripts": {
-    "dev": "node --watch src/app.mjs",
-    "start": "node src/app.mjs",
+    "dev": "node --watch src/servidor.mjs",
+    "start": "node src/servidor.mjs",
     "seed": "node src/seed.mjs && node src/seed.usuarios.mjs && node src/seed.sistema.mjs",
     "backup": "node src/backup.mjs"
   },
@@ -22,15 +22,18 @@
   },
   "homepage": "https://github.com/joaquinbarberan/Ing-Software#readme",
   "dependencies": {
+    "@vercel/blob": "^2.8.2",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "mime-type": "^5.0.3",
     "multer": "^2.2.0",
     "nanoid": "^5.1.11",
     "pg": "^8.21.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

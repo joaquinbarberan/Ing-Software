@@ -89,7 +89,8 @@ Rutas públicas sin sesión (para el sitio): `GET /salas`, `GET /salas/:id` y `G
 
 ```text
 src/
-  app.mjs                 servidor Express y montaje de rutas
+  app.mjs                 app de Express y montaje de rutas (la usa Vercel)
+  servidor.mjs            arranque local con app.listen (npm run dev)
   conexion.bd.mjs         pool de PostgreSQL y helper de transacciones
   bd/esquema.mjs          creación de todas las tablas (idempotente)
   routers/                rutas por módulo
@@ -99,6 +100,7 @@ src/
   utilidades/             cálculos (presupuesto, seña, liquidación) y manejo de errores
   seed*.mjs               datos iniciales
   backup.mjs              copia de seguridad con pg_dump (RNF07)
+api/index.mjs            entrada de la función de Vercel
 public/
   index.html, salas.html, reservas.html   sitio público
   login.html, sistema.html                sistema de gestión
@@ -113,6 +115,25 @@ npm run backup
 ```
 
 Genera un archivo en `backups/` (se conservan las últimas 30). Si `pg_dump` no está en el PATH, indicar su ruta en `PG_DUMP` dentro de `.env`. Para que sea diaria, programar ese comando en el Programador de tareas de Windows.
+
+## Despliegue en Vercel + Neon
+
+La app de Express corre en Vercel como una función (`api/index.mjs`) y el sitio estático se sirve desde `public/` (ver `vercel.json`). Localmente se sigue usando `npm run dev` (`src/servidor.mjs`).
+
+1. **Base de datos:** crear un proyecto en [Neon](https://neon.tech) y copiar la cadena de conexión *pooled* (la que tiene `-pooler` en el host).
+2. **Cargar los datos iniciales** desde la compu, apuntando a Neon (una sola vez):
+   ```bash
+   DATABASE_URL="postgresql://...-pooler...neon.tech/neondb?sslmode=require" npm run seed
+   ```
+3. **Vercel:** *Add New → Project*, importar el repo de GitHub y cargar las variables de entorno:
+   - `DATABASE_URL`: la cadena de Neon
+   - `JWT_SECRETO`: una clave larga y aleatoria (distinta de la local)
+   - `FRONTEND_URL`: la URL del proyecto, por ejemplo `https://diverty-park.vercel.app`
+   - `CRON_SECRET`: cualquier texto largo (protege la ruta del cron)
+4. **Fotos de las salas:** en el proyecto de Vercel, *Storage → Create → Blob* y conectarlo al proyecto. Vercel agrega solo `BLOB_READ_WRITE_TOKEN`. Después, *Redeploy*.
+5. Cada push a `main` despliega solo; cada rama tiene su propia URL de vista previa.
+
+El cron diario (`/api/cron/expirar`) libera las reservas preseñadas vencidas. Además, la expiración se revisa en cada consulta a la agenda.
 
 ## Pendiente para próximas etapas
 
