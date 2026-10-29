@@ -22,6 +22,10 @@ import { crearEsquema } from './bd/esquema.mjs';
 //  - en Vercel, api/index.mjs la usa como función serverless
 const app = express();
 
+// El salón opera en hora de Córdoba. Vercel corre en UTC: sin esto, después de las 21 h
+// "hoy" pasaría a ser el día siguiente (habilitar evento, fechas pasadas, etc.).
+process.env.TZ ||= 'America/Argentina/Cordoba';
+
 if (!process.env.JWT_SECRETO) {
   throw new Error('Falta JWT_SECRETO en las variables de entorno (copiá .env.example a .env y completalo).');
 }

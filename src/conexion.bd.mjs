@@ -31,6 +31,12 @@ const conexion = new Pool(process.env.DATABASE_URL
       database: process.env.DB_DATABASE
     });
 
+// Todas las conexiones trabajan en hora de Córdoba (Neon usa UTC por defecto).
+// Así NOW() y CURRENT_DATE coinciden con la hora local del salón.
+conexion.on('connect', (cliente) => {
+  cliente.query("SET TIME ZONE 'America/Argentina/Cordoba'").catch(() => {});
+});
+
 // Ejecuta una función dentro de una transacción.
 // Si la función lanza un error se hace ROLLBACK y no queda nada a medio guardar.
 export async function enTransaccion(funcion) {
