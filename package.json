@@ -1,25 +1,26 @@
 {
   "name": "final-aw",
   "version": "1.0.0",
-  "description": "el proyecto estara aqui",
+  "description": "Sistema de gestión web para el salón de fiestas Diverty Park",
   "main": "src/app.mjs",
   "scripts": {
     "dev": "node --watch src/app.mjs",
     "start": "node src/app.mjs",
-    "seed": "node src/seed.mjs && node src/seed.usuarios.mjs"
+    "seed": "node src/seed.mjs && node src/seed.usuarios.mjs && node src/seed.sistema.mjs",
+    "backup": "node src/backup.mjs"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joaquinbarberan/Final-aw.git"
+    "url": "git+https://github.com/joaquinbarberan/Ing-Software.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/joaquinbarberan/Final-aw/issues"
+    "url": "https://github.com/joaquinbarberan/Ing-Software/issues"
   },
-  "homepage": "https://github.com/joaquinbarberan/Final-aw#readme",
+  "homepage": "https://github.com/joaquinbarberan/Ing-Software#readme",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",

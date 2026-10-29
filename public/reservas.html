@@ -17,7 +17,7 @@
         <li><a href="index.html">INICIO</a></li>
         <li><a href="salas.html">SALAS</a></li>
         <li><a href="reservas.html">RESERVAS</a></li>
-        <li><a href="admin.html">ADMINISTRACIÓN</a></li>
+        <li><a href="./sistema.html">SISTEMA</a></li>
       </ul>
     </nav>
   </header>
@@ -29,7 +29,7 @@
       <h1 class="titulo-reserva-central">Reservá tu Fiesta</h1>
 
       <div class="formulario-caja">
-        <p class="descripcion">Completá los datos para reservar tu evento. ¡Te esperamos!</p>
+        <p class="descripcion">Elegí fecha, horario y sala: te mostramos si está libre y te ponemos en contacto con nuestro equipo de ventas para confirmar tu reserva.</p>
 
         <form id="formularioReserva" action="#" method="post" class="formulario-reserva">
 
@@ -41,8 +41,8 @@
           <input type="date" id="fecha" name="fecha" required>
           <span class="error-mensaje" id="error-fecha"></span>
 
-          <label for="hora">Hora</label>
-          <input type="time" id="hora" name="hora" required>
+          <label for="hora">Hora de inicio (el evento dura 4 horas)</label>
+          <input type="time" id="hora" name="hora" min="09:00" max="19:00" step="1800" required>
 
           <label for="email">Correo electrónico</label>
           <input type="email" id="email" name="email" required>
@@ -55,17 +55,17 @@
           <label for="sala">Sala</label>
           <select id="sala" name="sala" required>
             <option value="">Seleccioná una sala</option>
-            <option value="cartoon">Sala Cartoon</option>
-            <option value="amarilla">Sala Amarilla</option>
-            <option value="roja">Sala Roja</option>
-            <option value="oeste">Sala Oeste</option>
+            <!-- Las salas se cargan desde la base de datos (GET /salas) -->
           </select>
 
           <label for="comentarios">Comentarios</label>
           <textarea id="comentarios" name="comentarios" rows="4"></textarea>
 
-          <button type="submit">Enviar</button>
+          <button type="submit">Consultar disponibilidad</button>
         </form>
+
+        <!-- Resultado de la consulta de disponibilidad -->
+        <div id="resultado-disponibilidad" class="resultado-publico" hidden></div>
       </div>
     </div>
   </main>

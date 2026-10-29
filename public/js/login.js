@@ -25,8 +25,8 @@ formulario.addEventListener('submit', async (evento) => {
     const datos = await respuesta.json();
 
     if (respuesta.ok) {
-      // Login exitoso: redirigimos al panel de administración
-      window.location.href = './admin.html';
+      // Login exitoso: redirigimos al sistema de gestión
+      window.location.href = './sistema.html';
     } else {
       // Mostramos el mensaje de error del servidor
       mensajeError.textContent = datos.error || 'Error al iniciar sesión.';

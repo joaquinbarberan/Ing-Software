@@ -121,6 +121,10 @@ const salaControlador = {
 
       respuesta.json({ mensaje: 'Sala eliminada correctamente', sala: salaEliminada });
     } catch (error) {
+      // 23503 = la sala tiene reservas asociadas (clave foránea): no se puede borrar
+      if (error.code === '23503') {
+        return respuesta.status(409).json({ error: 'La sala tiene reservas registradas y no se puede eliminar.' });
+      }
       console.error('Error al eliminar sala:', error);
       respuesta.status(500).json({ error: 'Hubo un problema al eliminar la sala.' });
     }

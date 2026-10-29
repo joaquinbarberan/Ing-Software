@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de gestión - Diverty Park</title>
+  <link rel="stylesheet" href="./recursos/css/sistema.css">
+  <link rel="icon" href="./recursos/imagenes/payasio.png" type="image/png">
+</head>
+
+<body>
+
+  <!-- Barra superior (igual a los prototipos de interfaz del informe) -->
+  <header class="barra-superior">
+    <button class="boton-menu" id="boton-menu" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="#/" class="marca">
+      <img src="./recursos/imagenes/payasio.png" alt="" class="marca-logo">
+      <span>Diverty Park <span class="marca-separador">·</span> <span class="marca-sistema">Sistema de gestión</span></span>
+    </a>
+    <div class="usuario-menu">
+      <button class="usuario-boton" id="usuario-boton" aria-haspopup="true" aria-expanded="false">
+        <span id="usuario-perfil">Cargando...</span>
+        <span class="flecha">▾</span>
+      </button>
+      <div class="usuario-desplegable" id="usuario-desplegable" hidden>
+        <p class="usuario-nombre" id="usuario-nombre"></p>
+        <button data-accion="contrasena">Cambiar contraseña</button>
+        <a href="./index.html">Ver sitio público</a>
+        <button data-accion="salir">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="estructura">
+    <!-- Navegación lateral: se arma según el perfil del usuario (RF12) -->
+    <nav class="menu-lateral" id="menu-lateral" aria-label="Secciones del sistema"></nav>
+
+    <main class="contenido">
+      <div class="migas" id="migas"></div>
+      <div id="vista" class="vista">
+        <p class="cargando">Cargando...</p>
+      </div>
+    </main>
+  </div>
+
+  <div id="avisos" class="avisos" aria-live="polite"></div>
+
+  <script type="module" src="./recursos/js/sistema/app.js"></script>
+</body>
+
+</html>
