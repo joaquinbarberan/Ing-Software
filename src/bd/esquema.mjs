@@ -6,7 +6,7 @@ import conexion from '../conexion.bd.mjs';
 //
 // Organización por módulo (ver Modelo de paquetes del informe, sección 11):
 //   Seguridad y Usuarios -> usuarios
-//   M1 Agenda y Reservas -> salas, paquetes, reservas, reservas_historial
+//   M1 Agenda y Reservas -> salas, paquetes, reservas, reservas_historial, solicitudes_reserva
 //   M2 Clientes          -> clientes
 //   M3 Gestión de Evento -> eventos, adicionales, consumos, coordinadores, asignaciones,
 //                           insumos, paquetes_insumos, pedidos_insumos
@@ -106,6 +106,34 @@ const sentencias = [
     detalle TEXT,
     fecha TIMESTAMP NOT NULL DEFAULT NOW()
   )`,
+
+  // Solicitudes de reserva que deja el cliente desde la página web (ver CAMBIOS.md).
+  // NO es una reserva y NO bloquea la fecha: el área de Ventas la revisa y, si corresponde,
+  // la convierte en reserva con CU-02 (el cliente sigue fuera de la frontera del sistema).
+  `CREATE TABLE IF NOT EXISTS solicitudes_reserva (
+    id SERIAL PRIMARY KEY,
+    sala_id INT NOT NULL REFERENCES salas(id),
+    paquete_id INT NOT NULL REFERENCES paquetes(id),
+    fecha DATE NOT NULL,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL,
+    personas INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    dni VARCHAR(15) NOT NULL,
+    telefono VARCHAR(40) NOT NULL,
+    email VARCHAR(150),
+    comentarios TEXT,
+    estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+    reserva_id INT REFERENCES reservas(id),
+    motivo_descarte TEXT,
+    atendida_por INT REFERENCES usuarios(id),
+    atendida_en TIMESTAMP,
+    creada_en TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT solicitudes_estado_valido CHECK (estado IN ('pendiente','convertida','descartada')),
+    CONSTRAINT solicitudes_franja_valida CHECK (hora_fin > hora_inicio)
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_solicitudes_estado ON solicitudes_reserva (estado, fecha)`,
 
   // --- M3: GESTIÓN DE EVENTO ---
   `CREATE TABLE IF NOT EXISTS eventos (

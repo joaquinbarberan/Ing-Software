@@ -587,6 +587,73 @@ fieldset:disabled input, fieldset:disabled select { background: #faf7f3; color: 
 .aviso.saliendo { opacity: 0; transform: translateY(8px); }
 
 /* ---------- CELULARES Y TABLETS (RNF02, R01.7: desde 360 px) ---------- */
+/* --- Horarios libres como botones y bandeja de solicitudes web (ver CAMBIOS.md) --- */
+.caja-info { background: #eaf2fb; border-color: #9dbbe0; color: #1f4573; }
+
+.selector-horarios { margin: 4px 0 12px; }
+.horarios-zona { min-height: 40px; }
+.horarios-grupo { margin: 6px 0; }
+.horarios-grupo-nombre {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--texto-suave);
+  margin-bottom: 4px;
+}
+.horarios-botones { display: flex; flex-wrap: wrap; gap: 6px; }
+.horario-boton {
+  padding: 7px 10px;
+  border: 1px solid var(--realizada-borde);
+  background: var(--realizada);
+  color: #1d5a33;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-height: 38px;
+}
+.horario-boton small { font-weight: normal; opacity: 0.85; }
+.horario-boton:hover { border-color: var(--exito); }
+.horario-boton.elegido { background: var(--marca); border-color: var(--marca); color: var(--blanco); }
+.horario-boton:focus-visible { outline: 3px solid var(--acento); outline-offset: 1px; }
+
+.horario-manual { margin-top: 8px; font-size: 0.9rem; }
+.horario-manual summary { cursor: pointer; color: var(--texto-suave); margin-bottom: 8px; }
+
+.menu-contador {
+  display: inline-block;
+  min-width: 20px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  border-radius: 10px;
+  background: var(--marca);
+  color: var(--blanco);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.solicitud {
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 16px;
+  box-shadow: var(--sombra);
+}
+.solicitud h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.solicitud p { margin: 2px 0; }
+.solicitud .acciones { align-self: center; margin: 0; }
+.solicitud-libre { color: var(--exito); font-weight: 600; }
+.solicitud-ocupada { color: var(--error); font-weight: 600; }
+.filtros-solicitudes { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.filtros-solicitudes .boton.activo { background: var(--marca); color: var(--blanco); border-color: var(--marca); }
+
 @media (max-width: 1000px) {
   .columnas-2 { grid-template-columns: minmax(0, 1fr); }
   .columnas-2 > .tarjeta + .tarjeta { margin-top: 0; }
@@ -627,6 +694,7 @@ fieldset:disabled input, fieldset:disabled select { background: #faf7f3; color: 
 }
 
 @media (max-width: 560px) {
+  .solicitud { grid-template-columns: 1fr; }
   .columnas-3 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .columnas-3 > :first-child { grid-column: 1 / -1; }
   .columnas-2.compacta { grid-template-columns: minmax(0, 1fr); }

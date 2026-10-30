@@ -74,3 +74,31 @@ export function horarioLibreMasCercano(ocupadas, horaInicio, horaFin, minimoInic
 
   return mejor === null ? null : { hora_inicio: aHora(mejor), hora_fin: aHora(mejor + duracion) };
 }
+
+// --- Horarios libres (mejora de reservas, ver CAMBIOS.md) ---
+
+// Cada cuántos minutos se ofrece un horario de inicio (09:00, 09:30, 10:00...)
+export const PASO_HORARIOS = 30;
+
+// Todos los horarios de inicio en los que entra un evento de "duracionMinutos" en la sala,
+// sin pisarse con ninguna reserva vigente (RN01) y dentro del horario de atención.
+// "ocupadas" son las franjas vigentes de la sala ese día ({ hora_inicio, hora_fin }).
+// "minimoInicio" sirve para no ofrecer horarios que ya pasaron cuando la fecha es hoy.
+// "paso": cada cuántos minutos se ofrece un inicio. Con paso de 60 (web pública, para no mostrar
+// demasiados botones) se agregan igual los inicios justo al terminar otro evento, así no se pierde
+// ningún hueco aprovechable (ej.: un evento termina 15:30 -> se ofrece 15:30).
+export function horariosLibres(ocupadas, duracionMinutos, minimoInicio = HORA_APERTURA, paso = PASO_HORARIOS) {
+  const desde = Math.max(aMinutos(HORA_APERTURA), aMinutos(minimoInicio));
+  const hasta = aMinutos(HORA_CIERRE) - duracionMinutos;
+
+  const candidatos = new Set();
+  for (let inicio = Math.ceil(desde / paso) * paso; inicio <= hasta; inicio += paso) candidatos.add(inicio);
+  ocupadas.forEach(r => {
+    const finOcupada = aMinutos(r.hora_fin);
+    if (finOcupada >= desde && finOcupada <= hasta) candidatos.add(finOcupada);
+  });
+
+  return [...candidatos].sort((a, b) => a - b)
+    .filter(inicio => !ocupadas.some(r => aMinutos(r.hora_inicio) < inicio + duracionMinutos && aMinutos(r.hora_fin) > inicio))
+    .map(inicio => ({ hora_inicio: aHora(inicio), hora_fin: aHora(inicio + duracionMinutos) }));
+}

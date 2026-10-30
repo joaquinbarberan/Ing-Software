@@ -10,6 +10,8 @@ const VENTAS = ['ventas', 'administracion'];
 // CU-04 Visualizar agenda y CU-01 Consultar disponibilidad (el Encargado de Salón también puede mirar)
 enrutador.get('/agenda', agendaControlador.obtenerAgenda);
 enrutador.get('/agenda/disponibilidad', agendaControlador.consultarDisponibilidad);
+// Horarios libres listos para elegir con un clic (Nueva reserva, Consultar disponibilidad, Modificar reserva)
+enrutador.get('/agenda/horarios', agendaControlador.horariosDisponibles);
 
 // CU-12 Generar presupuesto (antes de /:id para que no lo tome como identificador)
 enrutador.get('/reservas/presupuesto', permitir(...VENTAS), agendaControlador.presupuesto);

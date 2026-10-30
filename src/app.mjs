@@ -12,6 +12,8 @@ import rutasClientes from './routers/clientes.routers.mjs';
 import rutasEventos from './routers/eventos.routers.mjs';
 import rutasCaja from './routers/caja.routers.mjs';
 import rutasCatalogos from './routers/catalogos.routers.mjs';
+import rutasSolicitudes from './routers/solicitudes.routers.mjs';
+import solicitudControlador from './controladores/solicitudes.controller.mjs';
 import salaControlador from './controladores/salas.controller.mjs';
 import agendaControlador, { expirarPresenadas } from './controladores/agenda.controller.mjs';
 import verificarToken from './middleware/autenticacion.mjs';
@@ -98,6 +100,7 @@ app.get('/api/cron/expirar', async (peticion, respuesta) => {
 app.use('/api/v1/salas', verificarToken, rutasSalas);
 app.use('/api/v1/clientes', verificarToken, rutasClientes);
 app.use('/api/v1/catalogos', verificarToken, rutasCatalogos);
+app.use('/api/v1/solicitudes', verificarToken, rutasSolicitudes); // Solicitudes que llegan desde la web
 app.use('/api/v1', verificarToken, rutasAgenda);   // M1 Agenda y Reservas
 app.use('/api/v1', verificarToken, rutasEventos);  // M3 Gestión de Evento
 app.use('/api/v1', verificarToken, rutasCaja);     // M4 Caja y Cobros
@@ -112,6 +115,12 @@ app.use('/api', (peticion, respuesta) => {
 app.get('/salas', salaControlador.listarSalas);
 app.get('/salas/:id', salaControlador.obtenerSala);
 app.get('/disponibilidad', agendaControlador.disponibilidadPublica);
+// Página de reservas en pasos (ver CAMBIOS.md): paquetes, calendario del mes y horarios libres del día
+app.get('/paquetes', agendaControlador.paquetesPublicos);
+app.get('/disponibilidad/mes', agendaControlador.calendarioPublico);
+app.get('/disponibilidad/dia', agendaControlador.horariosPublicos);
+// El cliente deja una SOLICITUD (no una reserva): Ventas la revisa y la convierte en reserva
+app.post('/solicitudes', solicitudControlador.crear);
 
 
 // --- 7. MANEJO DE ERRORES GENERALES ---

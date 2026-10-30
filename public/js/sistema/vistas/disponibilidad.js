@@ -3,6 +3,11 @@ import { api, query } from '../api.js';
 import { ponerMigas, reemplazarRuta } from '../navegacion.js';
 import { esc, puede, hoy, fechaLarga, etiquetaEstado, almacen, panelError } from '../util.js';
 
+function aMinutosTexto(hora) {
+  const [h, m] = hora.split(':').map(Number);
+  return h * 60 + m;
+}
+
 export default async function vistaDisponibilidad(contenedor, { parametros }) {
   ponerMigas(['Agenda', 'agenda'], 'Consultar disponibilidad');
 
@@ -85,6 +90,10 @@ export default async function vistaDisponibilidad(contenedor, { parametros }) {
     resultado.innerHTML = `
       ${cabecera}
       <section class="tarjeta">
+        <h2>Horarios libres en la ${esc(datos.sala.nombre)} ese día <span class="nota">(eventos de la misma duración)</span></h2>
+        <div id="horarios-dia"><p class="nota">Buscando...</p></div>
+      </section>
+      <section class="tarjeta">
         <h2>Eventos agendados el ${fechaLarga(datos.fecha)}</h2>
         ${otros.length === 0 ? '<p class="nota">No hay otros eventos ese día.</p>' : `
         <div class="tabla-desplazable">
@@ -102,6 +111,26 @@ export default async function vistaDisponibilidad(contenedor, { parametros }) {
           </table>
         </div>`}
       </section>`;
+
+    // Todos los horarios libres del día como botones: un clic los consulta (ver CAMBIOS.md)
+    const zonaHorarios = resultado.querySelector('#horarios-dia');
+    const duracionHoras = (aMinutosTexto(datos.hora_fin) - aMinutosTexto(datos.hora_inicio)) / 60;
+    api.get(`/agenda/horarios${query({ fecha: datos.fecha, sala_id: datos.sala.id, duracion: duracionHoras })}`)
+      .then(({ horarios }) => {
+        zonaHorarios.innerHTML = horarios.length
+          ? `<div class="horarios-botones">${horarios.map(h => `
+              <button type="button" class="horario-boton${h.hora_inicio === datos.hora_inicio && datos.disponible ? ' elegido' : ''}" data-inicio="${h.hora_inicio}" data-fin="${h.hora_fin}">${h.hora_inicio}<small>–${h.hora_fin}</small></button>`).join('')}</div>
+             <p class="nota">Tocá un horario para consultarlo${puede('ventas', 'administracion') ? ' y registrar la reserva' : ''}.</p>`
+          : '<p class="nota">No quedan horarios libres de esa duración en la sala ese día.</p>';
+      })
+      .catch(() => { zonaHorarios.innerHTML = '<p class="nota">No se pudieron cargar los horarios libres.</p>'; });
+    zonaHorarios.addEventListener('click', (evento) => {
+      const boton = evento.target.closest('[data-inicio]');
+      if (!boton) return;
+      formulario.desde.value = boton.dataset.inicio;
+      formulario.hasta.value = boton.dataset.fin;
+      consultar();
+    });
 
     resultado.querySelector('[data-sugerencia]')?.addEventListener('click', () => {
       formulario.desde.value = datos.sugerencia.hora_inicio;

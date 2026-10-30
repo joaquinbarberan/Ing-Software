@@ -53,6 +53,20 @@ const reservaModelo = {
     return resultado.rows;
   },
 
+  // Franjas ocupadas de todas las salas en un período (sólo horarios, sin datos de clientes).
+  // La usan el calendario público y la búsqueda de horarios libres.
+  async obtenerFranjasOcupadas(desde, hasta, bd = conexion) {
+    const resultado = await bd.query(`
+      SELECT id, sala_id, fecha,
+             to_char(hora_inicio, 'HH24:MI') AS hora_inicio,
+             to_char(hora_fin, 'HH24:MI') AS hora_fin
+      FROM reservas
+      WHERE fecha BETWEEN $1 AND $2 AND estado IN ('presenada','confirmada','en_curso')
+      ORDER BY fecha, hora_inicio
+    `, [desde, hasta]);
+    return resultado.rows;
+  },
+
   // Busca reservas vigentes de la sala que se pisen con la franja [horaInicio, horaFin).
   // Dos franjas se superponen cuando una empieza antes de que termine la otra (RN01).
   // excluirId permite ignorar la propia reserva cuando se está modificando.

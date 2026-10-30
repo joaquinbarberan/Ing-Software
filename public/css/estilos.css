@@ -394,3 +394,526 @@ footer h3 {
 .boton-whatsapp:hover {
     background: #187340;
 }
+
+/* ======================================================== */
+/*  RESERVA EN PASOS (página pública) — ver CAMBIOS.md       */
+/* ======================================================== */
+
+.rv-caja {
+    --rv-rojo: #d92332;
+    --rv-rojo-suave: #fdecec;
+    --rv-verde: #1f8f4e;
+    --rv-verde-suave: #e3f4e9;
+    --rv-naranja: #c87a12;
+    --rv-naranja-suave: #fdf1dd;
+    --rv-borde: #e2d9d9;
+    --rv-texto-suave: #666;
+
+    background: #fff;
+    border-radius: 12px;
+    border: 3px solid #d05a61;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    padding: 32px 40px;
+    max-width: 760px;
+    margin: 0 auto;
+    scroll-margin-top: 16px;
+}
+
+.rv-caja h1 {
+    text-align: center;
+    color: #d05a61;
+    margin: 0 0 8px;
+    font-style: italic;
+    text-shadow: 1px 1px 1px #888;
+}
+
+.rv-caja h2 {
+    margin: 8px 0 16px;
+    font-size: 1.35rem;
+}
+
+/* "hidden" tiene que ganarle a los display: grid/flex de los componentes */
+.rv-caja [hidden] { display: none !important; }
+
+.rv-intro {
+    text-align: center;
+    color: var(--rv-texto-suave);
+    margin: 0 0 20px;
+}
+
+.rv-cargando,
+.rv-ayuda {
+    color: var(--rv-texto-suave);
+    font-size: 0.92rem;
+}
+
+.rv-ayuda-error,
+.rv-error {
+    color: #b3121f;
+    font-weight: bold;
+}
+
+/* --- Indicador de pasos --- */
+.rv-progreso {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 0;
+    margin: 0 0 24px;
+    counter-reset: paso;
+}
+
+.rv-progreso li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: #999;
+    position: relative;
+}
+
+.rv-progreso li span {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #eee;
+    font-weight: bold;
+    color: #888;
+}
+
+.rv-progreso li.hecho { color: #333; cursor: pointer; }
+.rv-progreso li.hecho span { background: var(--rv-verde); color: #fff; }
+.rv-progreso li.actual { color: var(--rv-rojo); font-weight: bold; }
+.rv-progreso li.actual span { background: var(--rv-rojo); color: #fff; }
+
+/* --- Botones --- */
+.rv-acciones {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.rv-acciones .rv-boton:only-child { margin-left: auto; }
+
+.rv-boton {
+    padding: 13px 22px;
+    border: none;
+    border-radius: 8px;
+    background: var(--rv-rojo);
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.rv-boton:hover:not(:disabled) { background: #b81b29; }
+.rv-boton:disabled { background: #ccc; cursor: not-allowed; }
+
+.rv-boton-secundario {
+    background: #fff;
+    color: #333;
+    border: 2px solid #ccc;
+}
+
+.rv-boton-secundario:hover:not(:disabled) { background: #f4f4f4; }
+
+.rv-enlace {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--rv-rojo);
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9em;
+}
+
+.rv-caja button:focus-visible,
+.rv-caja input:focus-visible,
+.rv-caja textarea:focus-visible {
+    outline: 3px solid #f6b915;
+    outline-offset: 2px;
+}
+
+/* --- Paso 1: paquetes --- */
+.rv-paquetes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+}
+
+.rv-paquete {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+    padding: 16px;
+    border: 2px solid var(--rv-borde);
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.rv-paquete:hover { border-color: #d05a61; }
+
+.rv-paquete[aria-checked="true"] {
+    border-color: var(--rv-rojo);
+    background: var(--rv-rojo-suave);
+    box-shadow: 0 0 0 2px var(--rv-rojo) inset;
+}
+
+.rv-paquete strong { font-size: 1.1rem; }
+.rv-paquete-duracion {
+    align-self: flex-start;
+    font-size: 0.8rem;
+    background: #fff3cd;
+    border-radius: 20px;
+    padding: 2px 10px;
+}
+.rv-paquete-desc { font-size: 0.88rem; color: var(--rv-texto-suave); flex: 1; }
+.rv-paquete-precio { font-weight: bold; color: var(--rv-rojo); }
+.rv-paquete-precio small { display: block; font-weight: normal; color: var(--rv-texto-suave); }
+
+/* Invitados */
+.rv-invitados { margin-top: 24px; }
+.rv-invitados label { font-weight: bold; display: block; margin-bottom: 8px; }
+.rv-invitados small { font-weight: normal; color: var(--rv-texto-suave); }
+
+.rv-contador {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+}
+
+.rv-contador button {
+    min-width: 48px;
+    border: 2px solid var(--rv-borde);
+    background: #fff;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.rv-contador button:hover { border-color: #d05a61; }
+
+.rv-contador input {
+    width: 90px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border: 2px solid var(--rv-borde);
+    border-radius: 8px;
+    padding: 8px 4px;
+}
+
+.rv-precio {
+    margin-top: 20px;
+    background: #f8f6f1;
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+}
+
+.rv-precio div { display: flex; flex-direction: column; }
+.rv-precio span { font-size: 0.85rem; color: var(--rv-texto-suave); }
+.rv-precio strong { font-size: 1.4rem; }
+.rv-precio p { grid-column: 1 / -1; margin: 4px 0 0; font-size: 0.88rem; color: var(--rv-texto-suave); }
+
+/* --- Paso 2: calendario --- */
+.rv-calendario { max-width: 460px; margin: 0 auto; }
+
+.rv-cal-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.rv-cal-cabecera strong { font-size: 1.15rem; }
+
+.rv-cal-flecha {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 2px solid var(--rv-borde);
+    background: #fff;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.rv-cal-flecha:disabled { opacity: 0.3; cursor: default; }
+
+.rv-cal-semana,
+.rv-cal-dias {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.rv-cal-semana span {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--rv-texto-suave);
+    padding-bottom: 4px;
+}
+
+.rv-cal-dias { min-height: 230px; align-content: start; }
+.rv-cal-cargando { grid-column: 1 / -1; text-align: center; }
+
+.rv-dia {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    font: inherit;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    position: relative;
+}
+
+.rv-dia.libre { background: var(--rv-verde-suave); color: #155f35; }
+.rv-dia.pocos { background: var(--rv-naranja-suave); color: #8a520b; }
+.rv-dia.completo { background: #f1f1f1; color: #b5b5b5; text-decoration: line-through; cursor: not-allowed; }
+.rv-dia.pasado { background: transparent; color: #cfcfcf; cursor: default; }
+.rv-dia.hoy::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    width: 5px;
+    height: 5px;
+    margin-left: -2.5px;
+    border-radius: 50%;
+    background: currentColor;
+}
+.rv-dia.libre:hover { border-color: var(--rv-verde); }
+.rv-dia.pocos:hover { border-color: var(--rv-naranja); }
+.rv-dia.elegido { background: var(--rv-rojo); color: #fff; }
+
+.rv-leyenda {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 16px;
+    font-size: 0.85rem;
+    color: var(--rv-texto-suave);
+}
+
+.rv-leyenda i {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    vertical-align: -2px;
+    margin-right: 4px;
+}
+
+.rv-leyenda .libre { background: var(--rv-verde-suave); border: 1px solid var(--rv-verde); }
+.rv-leyenda .pocos { background: var(--rv-naranja-suave); border: 1px solid var(--rv-naranja); }
+.rv-leyenda .completo { background: #f1f1f1; border: 1px solid #ccc; }
+
+/* --- Paso 3: salas y horarios --- */
+.rv-subtitulo {
+    margin: -8px 0 16px;
+    color: var(--rv-texto-suave);
+}
+
+.rv-sala {
+    border: 2px solid var(--rv-borde);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+}
+
+.rv-sala-cabecera {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+.rv-sala-cabecera > div { flex: 1; }
+.rv-sala.abierta { border-color: #d05a61; }
+.rv-sala.abierta .rv-sala-cabecera { margin-bottom: 10px; }
+.rv-sala:not(.abierta):hover { border-color: #d05a61; }
+.rv-sala-resumen { text-transform: none; }
+.rv-sala-flecha { font-size: 1.2rem; color: var(--rv-texto-suave); }
+
+.rv-sala-cabecera img {
+    width: 72px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #f3f3f3;
+}
+
+.rv-sala-cabecera h3 { margin: 0; font-size: 1.1rem; }
+.rv-sala-cabecera p { margin: 2px 0 0; font-size: 0.85rem; color: var(--rv-texto-suave); }
+
+.rv-franja { margin-top: 8px; }
+.rv-franja-nombre {
+    display: block;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--rv-texto-suave);
+    margin-bottom: 5px;
+}
+
+.rv-horarios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.rv-horario {
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 2px solid #b9dcc6;
+    background: var(--rv-verde-suave);
+    color: #155f35;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+.rv-horario small { font-weight: normal; }
+.rv-horario:hover { border-color: var(--rv-verde); }
+.rv-horario.elegido { background: var(--rv-rojo); border-color: var(--rv-rojo); color: #fff; }
+
+.rv-aviso {
+    background: var(--rv-naranja-suave);
+    border: 1px solid #e6c48c;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+}
+
+/* --- Paso 4: resumen y formulario --- */
+.rv-resumen {
+    background: #f8f6f1;
+    border-radius: 10px;
+    padding: 6px 16px;
+    margin-bottom: 20px;
+}
+
+.rv-resumen dl { margin: 0; }
+.rv-resumen dl div {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #ebe5da;
+}
+.rv-resumen dl div:last-child { border-bottom: none; }
+.rv-resumen dt { color: var(--rv-texto-suave); font-size: 0.9rem; }
+.rv-resumen dd { margin: 0; }
+
+.rv-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.rv-fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.rv-formulario label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.rv-formulario label small { font-weight: normal; color: var(--rv-texto-suave); }
+
+.rv-formulario input,
+.rv-formulario textarea {
+    padding: 11px 12px;
+    border: 2px solid var(--rv-borde);
+    border-radius: 8px;
+    font: inherit;
+    font-weight: normal;
+}
+
+.rv-formulario .rv-invalido { border-color: #b3121f; background: #fff6f6; }
+
+.rv-trampa {
+    position: absolute !important;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.rv-privacidad {
+    font-size: 0.8rem;
+    color: var(--rv-texto-suave);
+    margin: 0;
+}
+
+/* --- Confirmación --- */
+.rv-final { text-align: center; }
+.rv-final .rv-resumen { text-align: left; }
+
+.rv-tilde {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: var(--rv-verde);
+    color: #fff;
+    font-size: 2.2rem;
+    display: grid;
+    place-items: center;
+}
+
+/* --- Celulares (RNF02: operable desde 360 px) --- */
+@media (max-width: 600px) {
+    /* El menú del sitio no entraba en pantallas chicas (se desbordaba hacia la derecha) */
+    .encabezado-principal { padding: 8px 12px; gap: 8px; }
+    .encabezado-principal .logo { width: 52px; }
+    .encabezado-principal nav ul { gap: 12px; padding: 0; margin: 0; flex-wrap: wrap; justify-content: flex-end; }
+    .encabezado-principal nav a { font-size: 0.85rem; }
+    .contenedor-reserva { padding: 20px 12px; }
+    .rv-caja { padding: 20px 16px; border-width: 2px; }
+    .rv-caja .titulo-reserva-central { font-size: 1.6rem; margin-top: 0; }
+    .rv-fila { grid-template-columns: 1fr; }
+    .rv-precio { grid-template-columns: 1fr; }
+    .rv-progreso li { font-size: 0.75rem; }
+    .rv-contador button { min-width: 40px; }
+    .rv-contador input { width: 70px; }
+    .rv-resumen dl div { grid-template-columns: 1fr; gap: 2px; }
+    .rv-acciones .rv-boton { flex: 1 1 auto; }
+    .rv-dia { font-size: 0.92rem; }
+}

@@ -15,12 +15,14 @@ import vistaCoordinadores from './vistas/coordinadores.js';
 import vistaInsumos from './vistas/insumos.js';
 import vistaReportes from './vistas/reportes.js';
 import vistaConfiguracion from './vistas/configuracion.js';
+import vistaSolicitudes, { actualizarContadorSolicitudes } from './vistas/solicitudes.js';
 
 // Cada sección: ruta, texto del menú, módulo del informe y perfiles que la ven
 const SECCIONES = [
   { ruta: 'agenda', texto: 'Agenda', modulo: 'M1', vista: vistaAgenda, perfiles: ['ventas', 'administracion', 'encargado'] },
   { ruta: 'disponibilidad', texto: 'Consultar disponibilidad', modulo: 'M1', vista: vistaDisponibilidad, perfiles: ['ventas', 'administracion', 'encargado'] },
   { ruta: 'nueva-reserva', texto: 'Nueva reserva', modulo: 'M1', vista: vistaNuevaReserva, perfiles: ['ventas', 'administracion'] },
+  { ruta: 'solicitudes', texto: 'Solicitudes web', modulo: 'M1', vista: vistaSolicitudes, perfiles: ['ventas', 'administracion'] },
   { ruta: 'clientes', texto: 'Clientes', modulo: 'M2', vista: vistaClientes, perfiles: ['ventas', 'administracion', 'encargado'] },
   { ruta: 'evento', texto: 'Evento del día', modulo: 'M3', vista: vistaEventoDia, perfiles: ['encargado', 'administracion'] },
   { ruta: 'coordinadores', texto: 'Coordinadores', modulo: 'M3', vista: vistaCoordinadores, perfiles: ['administracion'] },
@@ -184,6 +186,13 @@ async function iniciar() {
   dibujarMenu();
   window.addEventListener('hashchange', mostrarRuta);
   mostrarRuta();
+
+  // Contador de solicitudes web pendientes en el menú (se refresca cada 2 minutos)
+  if (puede('ventas', 'administracion')) {
+    actualizarContadorSolicitudes();
+    setInterval(actualizarContadorSolicitudes, 2 * 60 * 1000);
+    window.addEventListener('hashchange', actualizarContadorSolicitudes);
+  }
 }
 
 iniciar();

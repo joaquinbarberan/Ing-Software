@@ -7,7 +7,10 @@
     { "source": "/api/:ruta*", "destination": "/api" },
     { "source": "/salas", "destination": "/api" },
     { "source": "/salas/:id", "destination": "/api" },
-    { "source": "/disponibilidad", "destination": "/api" }
+    { "source": "/disponibilidad", "destination": "/api" },
+    { "source": "/disponibilidad/:ruta*", "destination": "/api" },
+    { "source": "/paquetes", "destination": "/api" },
+    { "source": "/solicitudes", "destination": "/api" }
   ],
   "crons": [
     { "path": "/api/cron/expirar", "schedule": "0 9 * * *" }

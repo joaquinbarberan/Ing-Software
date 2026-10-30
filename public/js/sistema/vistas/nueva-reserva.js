@@ -4,6 +4,7 @@ import { ponerMigas, navegar } from '../navegacion.js';
 import {
   esc, puede, pesos, hoy, fechaLarga, almacen, abrirModal, avisar, mostrarError, conBoton
 } from '../util.js';
+import { htmlSelectorHorarios, conectarSelectorHorarios, duracionEntre } from './componentes-horarios.js';
 
 const CLAVE_BORRADOR = 'borrador-reserva';
 
@@ -17,11 +18,21 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
   ponerMigas(['Agenda', 'agenda'], 'Nueva reserva');
 
   const [salas, paquetes] = await Promise.all([api.get('/salas'), api.get('/catalogos/paquetes?activos=true')]);
+
+  // Si se llega desde la bandeja "Solicitudes web", se trae la solicitud para precargar todo
+  let solicitud = null;
+  if (parametros.solicitud) {
+    solicitud = await api.get(`/solicitudes/${encodeURIComponent(parametros.solicitud)}`).catch(() => null);
+    if (solicitud?.estado !== 'pendiente') solicitud = null;
+  }
   const puedePersonalizado = puede('administracion');
   const paquetesVisibles = paquetes.filter(p => !p.es_personalizado || puedePersonalizado);
 
   contenedor.innerHTML = `
     <h1>Nueva reserva</h1>
+    ${solicitud ? `<div class="caja-mensaje caja-info">Cargando la <strong>solicitud web N.º ${solicitud.id}</strong> de ${esc(solicitud.nombre)} ${esc(solicitud.apellido)}
+      (tel. ${esc(solicitud.telefono)}). Revisá los datos y guardá: la solicitud queda marcada como atendida.
+      ${solicitud.comentarios ? `<br>Comentarios del cliente: <em>${esc(solicitud.comentarios)}</em>` : ''}</div>` : ''}
     <form id="form-reserva" novalidate>
       <div class="columnas-2">
         <section class="tarjeta">
@@ -43,15 +54,12 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
 
         <section class="tarjeta">
           <h2>Datos del evento</h2>
-          <div class="columnas-3 compacta">
+          <div class="columnas-2 compacta">
             <label class="campo"><span>Fecha</span><input type="date" name="fecha" min="${hoy()}" required></label>
-            <label class="campo"><span>Desde</span><input type="time" name="hora_inicio" step="1800" min="09:00" max="23:00" required></label>
-            <label class="campo"><span>Hasta</span><input type="time" name="hora_fin" step="1800" min="09:00" max="23:00" required></label>
+            <label class="campo"><span>Sala</span>
+              <select name="sala_id" required>${salas.map(s => `<option value="${s.id}" data-capacidad="${s.capacidad_ninos + s.capacidad_adultos}">${esc(s.nombre)} (hasta ${s.capacidad_ninos + s.capacidad_adultos} pers.)</option>`).join('')}</select>
+            </label>
           </div>
-          <label class="campo"><span>Sala</span>
-            <select name="sala_id" required>${salas.map(s => `<option value="${s.id}" data-capacidad="${s.capacidad_ninos + s.capacidad_adultos}">${esc(s.nombre)} (hasta ${s.capacidad_ninos + s.capacidad_adultos} pers.)</option>`).join('')}</select>
-          </label>
-          <p id="estado-franja" class="estado-franja"></p>
           <div class="columnas-paquete compacta">
             <label class="campo"><span>Paquete</span>
               <select name="paquete_id" required>
@@ -61,6 +69,8 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
             </label>
             <label class="campo"><span>Personas</span><input type="number" name="personas_contratadas" min="1" required></label>
           </div>
+          ${htmlSelectorHorarios()}
+          <p id="estado-franja" class="estado-franja"></p>
           <label class="campo" id="campo-importe" hidden><span>Importe del paquete personalizado</span><input type="number" name="importe_manual" min="1" step="100"></label>
           <label class="campo"><span>Observaciones</span><input name="observaciones" placeholder="Temática: superhéroes" maxlength="500"></label>
         </section>
@@ -92,11 +102,17 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
 
   // --- Borrador local: si se cae la conexión al guardar, los datos no se pierden (E3) ---
   const borrador = almacen.leer(CLAVE_BORRADOR);
-  const valoresIniciales = {
-    fecha: parametros.fecha || '', hora_inicio: parametros.desde || '', hora_fin: parametros.hasta || '',
-    sala_id: parametros.sala || salas[0]?.id || ''
-  };
-  if (borrador && !parametros.fecha) {
+  const valoresIniciales = solicitud
+    ? {
+        fecha: solicitud.fecha, hora_inicio: solicitud.hora_inicio, hora_fin: solicitud.hora_fin,
+        sala_id: solicitud.sala_id, paquete_id: solicitud.paquete_id, personas_contratadas: solicitud.personas,
+        dni: solicitud.dni, observaciones: solicitud.comentarios ? solicitud.comentarios.slice(0, 500) : ''
+      }
+    : {
+        fecha: parametros.fecha || '', hora_inicio: parametros.desde || '', hora_fin: parametros.hasta || '',
+        sala_id: parametros.sala || salas[0]?.id || ''
+      };
+  if (borrador && !parametros.fecha && !solicitud) {
     Object.entries(borrador).forEach(([nombre, valor]) => { if (formulario[nombre]) formulario[nombre].value = valor; });
     contenedor.querySelector('h1').insertAdjacentHTML('afterend',
       '<div class="caja-mensaje caja-advertencia">Se recuperaron los datos de una reserva que no se llegó a guardar. <button type="button" class="boton boton-secundario" data-descartar>Descartar</button></div>');
@@ -136,6 +152,13 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
       // A1: cliente inexistente -> se habilita CU-05 Registrar cliente sin salir del formulario
       bloquearCliente(false);
       camposCliente.forEach(campo => { campo.value = ''; });
+      // Si viene de una solicitud web, los datos de contacto ya los dejó el cliente
+      if (solicitud && dni === solicitud.dni) {
+        formulario.nombre.value = solicitud.nombre;
+        formulario.apellido.value = solicitud.apellido;
+        formulario.telefono.value = solicitud.telefono;
+        formulario.email.value = solicitud.email || '';
+      }
       botonRegistrar.hidden = false;
       estadoCliente.innerHTML = '<span class="etiqueta etiqueta-aviso">No existe</span> <span class="nota">Completá los datos y registralo.</span>';
       formulario.nombre.focus();
@@ -185,6 +208,19 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
   }
   ['fecha', 'hora_inicio', 'hora_fin', 'sala_id'].forEach(nombre => formulario[nombre].addEventListener('change', () => { verificarFranja(); calcular(); }));
 
+  // --- Horarios libres como botones (ver CAMBIOS.md) ---
+  // La duración la define el paquete; sin paquete, la del horario cargado o 4 horas.
+  function duracionActual() {
+    const paquete = paquetes.find(p => String(p.id) === formulario.paquete_id.value);
+    if (paquete) return paquete.duracion_horas * 60;
+    if (formulario.hora_inicio.value && formulario.hora_fin.value && formulario.hora_fin.value > formulario.hora_inicio.value) {
+      return duracionEntre(formulario.hora_inicio.value, formulario.hora_fin.value);
+    }
+    return 240;
+  }
+  const selectorHorarios = conectarSelectorHorarios(formulario, { duracion: duracionActual });
+  ['fecha', 'sala_id', 'paquete_id'].forEach(nombre => formulario[nombre].addEventListener('change', () => selectorHorarios.actualizar()));
+
   // --- Presupuesto en vivo (CU-12) ---
   let consultaPresupuesto = 0;
   async function calcular() {
@@ -228,7 +264,7 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
     const faltan = [];
     if (!formulario.cliente_id.value) faltan.push('buscar o registrar al cliente');
     if (!formulario.fecha.value) faltan.push('la fecha');
-    if (!formulario.hora_inicio.value || !formulario.hora_fin.value) faltan.push('el horario');
+    if (!formulario.hora_inicio.value || !formulario.hora_fin.value) faltan.push('el horario (tocá uno de los horarios libres)');
     if (!formulario.paquete_id.value) faltan.push('el paquete');
     if (!(Number(formulario.personas_contratadas.value) > 0)) faltan.push('la cantidad de personas');
     formulario.querySelectorAll('.campo-invalido').forEach(c => c.classList.remove('campo-invalido'));
@@ -240,6 +276,12 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
   formulario.addEventListener('submit', async (evento) => {
     evento.preventDefault();
     errores.innerHTML = '';
+    // Cliente nuevo con los datos ya completos (por ejemplo, desde una solicitud web):
+    // se registra en el mismo paso (CU-05 extiende a CU-02), sin obligar a tocar otro botón antes
+    if (!formulario.cliente_id.value && !botonRegistrar.hidden &&
+        formulario.nombre.value.trim() && formulario.apellido.value.trim() && formulario.telefono.value.trim()) {
+      await registrarCliente();
+    }
     // E2: campos obligatorios incompletos -> no se envía el formulario
     const faltan = validar();
     if (faltan.length) {
@@ -248,6 +290,7 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
     }
 
     const datos = Object.fromEntries(new FormData(formulario));
+    if (solicitud) datos.solicitud_id = solicitud.id;
     try {
       const reserva = await conBoton(formulario.querySelector('[type=submit]'), () => api.post('/reservas', datos));
       almacen.borrar(CLAVE_BORRADOR);
@@ -295,5 +338,6 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
 
   verificarFranja();
   calcular();
+  selectorHorarios.actualizar();
   if (formulario.dni.value) buscarCliente();
 }

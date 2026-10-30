@@ -9,9 +9,10 @@ import { ESTADOS_TERMINALES } from '../bd/esquema.mjs';
 import { tienePermiso } from '../middleware/permisos.mjs';
 import { ErrorNegocio, manejar, entero, importe, hoy, REGEX_FECHA, REGEX_HORA } from '../utilidades/errores.mjs';
 import {
-  precioPara, senaPara, calcularLiquidacion, horarioLibreMasCercano,
+  precioPara, senaPara, calcularLiquidacion, horarioLibreMasCercano, horariosLibres, aHora,
   HORA_APERTURA, HORA_CIERRE, PORCENTAJE_SENA
 } from '../utilidades/calculos.mjs';
+import solicitudModelo from '../modelos/solicitudes.model.mjs';
 
 // =====================================================================================
 // GestorAgenda — clase de control del módulo M1 (Figura 5 — Diagrama de clases).
@@ -119,6 +120,85 @@ async function detalleReserva(id) {
   };
 }
 
+
+// =====================================================================================
+// Horarios libres (mejora de reservas, ver CAMBIOS.md).
+// En lugar de que el usuario tipee hora y minutos y pruebe hasta acertar, el sistema
+// calcula todos los horarios de inicio en los que el evento entra sin superponerse (RN01).
+// =====================================================================================
+
+// Hora mínima de inicio: si la fecha es hoy no se ofrecen horarios que ya pasaron
+// (más un margen para preparar el salón). Para otra fecha, la apertura.
+function minimoInicio(fecha, margenMinutos) {
+  if (fecha !== hoy()) return HORA_APERTURA;
+  const ahora = new Date();
+  return aHora(Math.min(23 * 60 + 59, ahora.getHours() * 60 + ahora.getMinutes() + margenMinutos));
+}
+
+// Duración del evento: la del paquete elegido o, si no hay paquete, la indicada en horas (4 por defecto)
+async function duracionPedida({ paqueteId, horas, soloPublicos = false }) {
+  if (paqueteId) {
+    const paquete = await catalogoModelo.obtenerPaquete(entero(paqueteId));
+    if (!paquete || !paquete.activo || (soloPublicos && paquete.es_personalizado)) {
+      throw new ErrorNegocio(400, 'Elegí un paquete vigente.');
+    }
+    return { paquete, minutos: paquete.duracion_horas * 60 };
+  }
+  const valor = horas === undefined || horas === '' ? 4 : Number(horas);
+  if (!(valor >= 1 && valor <= 14)) throw new ErrorNegocio(400, 'La duración debe estar entre 1 y 14 horas.');
+  return { paquete: null, minutos: Math.round(valor * 60) };
+}
+
+function capacidadDe(sala) {
+  return sala.capacidad_ninos + sala.capacidad_adultos;
+}
+
+// Salas donde entran las personas indicadas (capacidad 0 = sin límite cargado)
+function salasParaPersonas(salas, personas) {
+  if (!(personas > 0)) return salas;
+  return salas.filter(sala => capacidadDe(sala) === 0 || capacidadDe(sala) >= personas);
+}
+
+// Devuelve, para cada fecha del período, los horarios libres de cada sala.
+// Hace UNA sola consulta a la base para todo el período, así el calendario mensual responde rápido (R04.6).
+async function horariosDelPeriodo(desde, hasta, salas, minutos, { margenHoy = 0, excluirId = null, paso = 30 } = {}) {
+  const ocupadas = (await reservaModelo.obtenerFranjasOcupadas(desde, hasta)).filter(r => r.id !== excluirId);
+  const porFecha = new Map();
+  for (let fecha = desde; fecha <= hasta; fecha = sumarDias(fecha, 1)) {
+    const minimo = minimoInicio(fecha, margenHoy);
+    porFecha.set(fecha, salas.map(sala => ({
+      sala,
+      horarios: fecha < hoy() ? [] : horariosLibres(
+        ocupadas.filter(r => r.sala_id === sala.id && r.fecha === fecha), minutos, minimo, paso)
+    })));
+  }
+  return porFecha;
+}
+
+function sumarDias(fecha, dias) {
+  const [a, m, d] = fecha.split('-').map(Number);
+  const nueva = new Date(Date.UTC(a, m - 1, d + dias));
+  return nueva.toISOString().slice(0, 10);
+}
+
+function ultimoDiaDelMes(mes) {
+  const [a, m] = mes.split('-').map(Number);
+  return new Date(Date.UTC(a, m, 0)).toISOString().slice(0, 10);
+}
+
+// En la web pública se pide un margen de 2 horas para reservar en el mismo día,
+// y los horarios se ofrecen cada una hora (más los que quedan justo al terminar otro evento)
+const MARGEN_PUBLICO_MINUTOS = 120;
+const PASO_PUBLICO_MINUTOS = 60;
+
+function salaPublica(sala) {
+  return {
+    id: sala.id, nombre: sala.nombre, capacidad: capacidadDe(sala),
+    capacidad_ninos: sala.capacidad_ninos, capacidad_adultos: sala.capacidad_adultos,
+    imagen: sala.imagen, alt_imagen: sala.alt_imagen
+  };
+}
+
 const agendaControlador = {
 
   // CU-01 · Consultar disponibilidad
@@ -171,6 +251,87 @@ const agendaControlador = {
       sala: sala.nombre,
       horario: { apertura: HORA_APERTURA, cierre: HORA_CIERRE },
       ocupadas: ocupadas.map(r => ({ hora_inicio: r.hora_inicio, hora_fin: r.hora_fin }))
+    });
+  }),
+
+
+  // Horarios libres de una sala en una fecha, para elegirlos con un clic en "Nueva reserva"
+  // y al modificar una reserva (excluir_id = la propia reserva, que no se pisa consigo misma).
+  // GET /api/v1/agenda/horarios?fecha=&sala_id=&paquete_id=|duracion=&excluir_id=
+  horariosDisponibles: manejar(async (peticion, respuesta) => {
+    const { fecha, sala_id: salaId, paquete_id: paqueteId, duracion, excluir_id: excluirId } = peticion.query;
+    if (!REGEX_FECHA.test(fecha || '')) throw new ErrorNegocio(400, 'Elegí una fecha.');
+    const sala = await obtenerSalaValida(salaId);
+    const { minutos } = await duracionPedida({ paqueteId, horas: duracion });
+    await expirarPresenadas();
+    const porFecha = await horariosDelPeriodo(fecha, fecha, [sala], minutos, {
+      margenHoy: 0, excluirId: excluirId ? entero(excluirId) : null
+    });
+    respuesta.json({
+      fecha, sala_id: sala.id, duracion_minutos: minutos,
+      horario: { apertura: HORA_APERTURA, cierre: HORA_CIERRE },
+      horarios: porFecha.get(fecha)[0].horarios
+    });
+  }),
+
+  // --- API PÚBLICA de la página de reservas (sin datos de clientes) ---
+
+  // Paquetes que el cliente puede elegir en la web (el personalizado lo arma Administración)
+  // GET /paquetes
+  paquetesPublicos: manejar(async (peticion, respuesta) => {
+    const paquetes = await catalogoModelo.listarPaquetes({ soloActivos: true });
+    respuesta.json(paquetes.filter(p => !p.es_personalizado).map(p => ({
+      id: p.id, nombre: p.nombre, descripcion: p.descripcion, precio_base: p.precio_base,
+      personas_incluidas: p.personas_incluidas, duracion_horas: p.duracion_horas,
+      tarifa_excedente: p.tarifa_excedente, porcentaje_sena: PORCENTAJE_SENA
+    })));
+  }),
+
+  // Calendario del mes: para cada día, cuántos horarios quedan libres en las salas donde entran los invitados.
+  // GET /disponibilidad/mes?mes=AAAA-MM&paquete_id=&personas=
+  calendarioPublico: manejar(async (peticion, respuesta) => {
+    const { mes, paquete_id: paqueteId } = peticion.query;
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes || '')) throw new ErrorNegocio(400, 'Indicá el mes (AAAA-MM).');
+    const limite = sumarDias(hoy(), 540);
+    if (`${mes}-01` > limite) throw new ErrorNegocio(400, 'Todavía no se toman reservas para esa fecha.');
+
+    const { minutos } = await duracionPedida({ paqueteId, horas: peticion.query.duracion, soloPublicos: true });
+    const salas = salasParaPersonas(await salaModelo.obtenerTodas(), entero(peticion.query.personas));
+    await expirarPresenadas();
+
+    const desde = `${mes}-01`;
+    const porFecha = await horariosDelPeriodo(desde, ultimoDiaDelMes(mes), salas, minutos, { margenHoy: MARGEN_PUBLICO_MINUTOS, paso: PASO_PUBLICO_MINUTOS });
+
+    const dias = [...porFecha.entries()].map(([fecha, lista]) => {
+      const libres = lista.reduce((total, item) => total + item.horarios.length, 0);
+      const salasLibres = lista.filter(item => item.horarios.length > 0).length;
+      let estado = 'libre';
+      if (fecha < hoy()) estado = 'pasado';
+      else if (libres === 0) estado = 'completo';
+      else if (libres <= 4) estado = 'pocos';
+      return { fecha, estado, horarios_libres: libres, salas_libres: salasLibres };
+    });
+
+    respuesta.json({ mes, duracion_minutos: minutos, salas_consideradas: salas.length, dias });
+  }),
+
+  // Horarios libres de un día, sala por sala, listos para elegir con un clic.
+  // GET /disponibilidad/dia?fecha=&paquete_id=&personas=
+  horariosPublicos: manejar(async (peticion, respuesta) => {
+    const { fecha, paquete_id: paqueteId } = peticion.query;
+    if (!REGEX_FECHA.test(fecha || '')) throw new ErrorNegocio(400, 'Elegí una fecha.');
+    if (fecha < hoy()) throw new ErrorNegocio(400, 'La fecha ya pasó.');
+    const { minutos } = await duracionPedida({ paqueteId, horas: peticion.query.duracion, soloPublicos: true });
+    const todas = await salaModelo.obtenerTodas();
+    const salas = salasParaPersonas(todas, entero(peticion.query.personas));
+    await expirarPresenadas();
+    const porFecha = await horariosDelPeriodo(fecha, fecha, salas, minutos, { margenHoy: MARGEN_PUBLICO_MINUTOS, paso: PASO_PUBLICO_MINUTOS });
+    respuesta.json({
+      fecha, duracion_minutos: minutos,
+      horario: { apertura: HORA_APERTURA, cierre: HORA_CIERRE },
+      salas: porFecha.get(fecha).map(({ sala, horarios }) => ({ ...salaPublica(sala), horarios })),
+      // Salas que existen pero donde no entran los invitados indicados
+      salas_chicas: todas.filter(s => !salas.includes(s)).map(s => ({ id: s.id, nombre: s.nombre, capacidad: capacidadDe(s) }))
     });
   }),
 
@@ -245,6 +406,16 @@ const agendaControlador = {
       // R02.7: queda registrado qué usuario dio de alta la reserva, con fecha y hora
       await reservaModelo.registrarHistorial(id, usuario.id, 'alta',
         `Reserva creada en ${sala.nombre} para el ${datos.fecha} de ${inicio} a ${fin}. Paquete ${calculo.paquete.nombre}, ${personas} personas.`, bd);
+
+      // Si la reserva nace de una solicitud de la web, la solicitud queda marcada como atendida
+      // dentro de la misma transacción (si algo falla, no queda una a medias).
+      const solicitudId = entero(datos.solicitud_id);
+      if (solicitudId > 0) {
+        const marcada = await solicitudModelo.marcarConvertida(solicitudId, id, usuario.id, bd);
+        if (!marcada) throw new ErrorNegocio(409, 'Esa solicitud web ya fue atendida por otro usuario. Revisá la bandeja de solicitudes.');
+        await reservaModelo.registrarHistorial(id, usuario.id, 'solicitud_web',
+          `Reserva generada a partir de la solicitud web N.º ${solicitudId}.`, bd);
+      }
       return id;
     });
 

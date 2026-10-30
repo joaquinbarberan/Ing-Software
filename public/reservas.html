@@ -24,49 +24,113 @@
 
   <main class="contenedor-reserva">
 
-    <div class="contenido-centrado-reserva">
-
+    <div class="rv-caja">
       <h1 class="titulo-reserva-central">Reservá tu Fiesta</h1>
+      <p class="rv-intro">En 4 pasos elegís el paquete, el día y el horario. Te mostramos sólo los horarios que están libres.</p>
 
-      <div class="formulario-caja">
-        <p class="descripcion">Elegí fecha, horario y sala: te mostramos si está libre y te ponemos en contacto con nuestro equipo de ventas para confirmar tu reserva.</p>
+      <!-- Indicador de pasos: los ya completados se pueden tocar para volver -->
+      <ol class="rv-progreso" id="rv-progreso" aria-label="Pasos de la reserva">
+        <li data-ir="1"><span>1</span> Paquete</li>
+        <li data-ir="2"><span>2</span> Día</li>
+        <li data-ir="3"><span>3</span> Horario</li>
+        <li data-ir="4"><span>4</span> Tus datos</li>
+      </ol>
 
-        <form id="formularioReserva" action="#" method="post" class="formulario-reserva">
+      <!-- PASO 1: paquete e invitados -->
+      <section class="rv-paso" data-paso="1">
+        <h2>¿Qué fiesta querés?</h2>
+        <div class="rv-paquetes" id="rv-paquetes" role="radiogroup" aria-label="Paquetes">
+          <p class="rv-cargando">Cargando paquetes...</p>
+        </div>
 
-          <label for="nombre">Nombre y Apellido</label>
-          <input type="text" id="nombre" name="nombre" required>
-          <span class="error-mensaje" id="error-nombre"></span>
+        <div class="rv-invitados">
+          <label for="rv-personas">¿Cuántos invitados van a ser? <small>(niños y adultos)</small></label>
+          <div class="rv-contador">
+            <button type="button" data-cambiar="-5" aria-label="Restar 5">−5</button>
+            <button type="button" data-cambiar="-1" aria-label="Restar 1">−</button>
+            <input type="number" id="rv-personas" min="1" inputmode="numeric" value="30">
+            <button type="button" data-cambiar="1" aria-label="Sumar 1">+</button>
+            <button type="button" data-cambiar="5" aria-label="Sumar 5">+5</button>
+          </div>
+          <p class="rv-ayuda" id="rv-ayuda-personas"></p>
+        </div>
 
-          <label for="fecha">Fecha del evento</label>
-          <input type="date" id="fecha" name="fecha" required>
-          <span class="error-mensaje" id="error-fecha"></span>
+        <div class="rv-precio" id="rv-precio" hidden></div>
 
-          <label for="hora">Hora de inicio (el evento dura 4 horas)</label>
-          <input type="time" id="hora" name="hora" min="09:00" max="19:00" step="1800" required>
+        <div class="rv-acciones">
+          <button type="button" class="rv-boton" data-siguiente="2" id="rv-ir-dia" disabled>Elegir el día →</button>
+        </div>
+      </section>
 
-          <label for="email">Correo electrónico</label>
-          <input type="email" id="email" name="email" required>
-          <span class="error-mensaje" id="error-email"></span>
+      <!-- PASO 2: calendario con disponibilidad -->
+      <section class="rv-paso" data-paso="2" hidden>
+        <h2>Elegí el día</h2>
+        <div class="rv-calendario">
+          <div class="rv-cal-cabecera">
+            <button type="button" class="rv-cal-flecha" id="rv-mes-anterior" aria-label="Mes anterior">‹</button>
+            <strong id="rv-mes-titulo" aria-live="polite"></strong>
+            <button type="button" class="rv-cal-flecha" id="rv-mes-siguiente" aria-label="Mes siguiente">›</button>
+          </div>
+          <div class="rv-cal-semana" aria-hidden="true"><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span></div>
+          <div class="rv-cal-dias" id="rv-cal-dias"></div>
+          <ul class="rv-leyenda">
+            <li><i class="libre"></i> Hay horarios</li>
+            <li><i class="pocos"></i> Últimos horarios</li>
+            <li><i class="completo"></i> Sin lugar</li>
+          </ul>
+        </div>
+        <div class="rv-acciones">
+          <button type="button" class="rv-boton rv-boton-secundario" data-siguiente="1">← Volver</button>
+        </div>
+      </section>
 
-          <label for="telefono">Teléfono</label>
-          <input type="tel" id="telefono" name="telefono" required>
-          <span class="error-mensaje" id="error-telefono"></span>
+      <!-- PASO 3: sala y horario -->
+      <section class="rv-paso" data-paso="3" hidden>
+        <h2>Elegí sala y horario</h2>
+        <p class="rv-subtitulo" id="rv-dia-elegido"></p>
+        <div id="rv-salas"></div>
+        <div class="rv-acciones">
+          <button type="button" class="rv-boton rv-boton-secundario" data-siguiente="2">← Cambiar el día</button>
+        </div>
+      </section>
 
-          <label for="sala">Sala</label>
-          <select id="sala" name="sala" required>
-            <option value="">Seleccioná una sala</option>
-            <!-- Las salas se cargan desde la base de datos (GET /salas) -->
-          </select>
+      <!-- PASO 4: datos de contacto y envío -->
+      <section class="rv-paso" data-paso="4" hidden>
+        <h2>Tus datos</h2>
+        <div class="rv-resumen" id="rv-resumen"></div>
 
-          <label for="comentarios">Comentarios</label>
-          <textarea id="comentarios" name="comentarios" rows="4"></textarea>
-
-          <button type="submit">Consultar disponibilidad</button>
+        <form id="rv-formulario" class="rv-formulario" novalidate>
+          <div class="rv-fila">
+            <label>Nombre<input name="nombre" autocomplete="given-name" required></label>
+            <label>Apellido<input name="apellido" autocomplete="family-name" required></label>
+          </div>
+          <div class="rv-fila">
+            <label>DNI<input name="dni" inputmode="numeric" autocomplete="off" placeholder="Sin puntos" required></label>
+            <label>Teléfono / WhatsApp<input name="telefono" type="tel" autocomplete="tel" placeholder="351 555-1234" required></label>
+          </div>
+          <label>Correo electrónico <small>(opcional)</small><input name="email" type="email" autocomplete="email"></label>
+          <label>Comentarios <small>(opcional: temática, edad del cumpleañero...)</small><textarea name="comentarios" rows="3" maxlength="500"></textarea></label>
+          <!-- Campo trampa contra robots: las personas no lo ven -->
+          <label class="rv-trampa" aria-hidden="true">Sitio web<input name="sitio_web" tabindex="-1" autocomplete="off"></label>
+          <p class="rv-error" id="rv-error" role="alert" hidden></p>
+          <p class="rv-privacidad">Usamos tus datos sólo para gestionar esta reserva (Ley 25.326 de Protección de Datos Personales).</p>
+          <div class="rv-acciones">
+            <button type="button" class="rv-boton rv-boton-secundario" data-siguiente="3">← Volver</button>
+            <button type="submit" class="rv-boton">Enviar solicitud</button>
+          </div>
         </form>
+      </section>
 
-        <!-- Resultado de la consulta de disponibilidad -->
-        <div id="resultado-disponibilidad" class="resultado-publico" hidden></div>
-      </div>
+      <!-- Confirmación -->
+      <section class="rv-paso rv-final" data-paso="5" hidden>
+        <div class="rv-tilde" aria-hidden="true">✓</div>
+        <h2 id="rv-final-titulo">¡Recibimos tu solicitud!</h2>
+        <div class="rv-resumen" id="rv-final-resumen"></div>
+        <p>Nuestro equipo de ventas te va a contactar para pasarte los datos de la seña.
+          <strong>La fecha queda reservada cuando se registra la seña.</strong></p>
+        <a class="boton-whatsapp" id="rv-whatsapp" target="_blank" rel="noopener">Avisar por WhatsApp para agilizar</a>
+        <p><button type="button" class="rv-enlace" id="rv-otra">Hacer otra solicitud</button></p>
+      </section>
     </div>
   </main>
 

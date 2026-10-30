@@ -6,6 +6,7 @@ import {
   esc, puede, pesos, hoy, fechaLarga, fechaCorta, fechaHora, etiquetaEstado, MEDIOS, TIPOS_PAGO,
   abrirModal, confirmar, avisar, mostrarError, conBoton, panelError, enlaceWhatsapp
 } from '../util.js';
+import { htmlSelectorHorarios, conectarSelectorHorarios, duracionEntre } from './componentes-horarios.js';
 import { formularioPago, formularioLiquidacion, tablaCuenta } from './componentes-caja.js';
 import { seccionEvento } from './componentes-evento.js';
 
@@ -70,15 +71,14 @@ export default async function vistaReserva(contenedor, { partes, parametros }) {
             <fieldset ${puedeEditar ? '' : 'disabled'}>
               <div class="columnas-3 compacta">
                 <label class="campo"><span>Fecha</span><input type="date" name="fecha" value="${r.fecha}" min="${hoy() < r.fecha ? hoy() : r.fecha}" required></label>
-                <label class="campo"><span>Desde</span><input type="time" name="hora_inicio" value="${r.hora_inicio}" step="1800" required></label>
-                <label class="campo"><span>Hasta</span><input type="time" name="hora_fin" value="${r.hora_fin}" step="1800" required></label>
-              </div>
-              <div class="columnas-2 compacta">
                 <label class="campo"><span>Sala</span>
                   <select name="sala_id">${salas.map(s => `<option value="${s.id}" ${s.id === r.sala_id ? 'selected' : ''}>${esc(s.nombre)}</option>`).join('')}</select>
                 </label>
                 <label class="campo"><span>Personas contratadas</span><input type="number" name="personas_contratadas" min="1" value="${r.personas_contratadas}" required></label>
               </div>
+              ${puedeEditar
+                ? htmlSelectorHorarios({ horaInicio: r.hora_inicio, horaFin: r.hora_fin })
+                : `<input type="hidden" name="hora_inicio" value="${r.hora_inicio}"><input type="hidden" name="hora_fin" value="${r.hora_fin}">`}
               ${r.paquete_personalizado ? `<label class="campo"><span>Importe del paquete personalizado</span><input type="number" name="importe_manual" value="${r.importe_estimado}" ${puede('administracion') ? '' : 'readonly'}></label>` : ''}
               <label class="campo"><span>Observaciones</span><input name="observaciones" value="${esc(r.observaciones || '')}" maxlength="500"></label>
               ${puedeEditar ? `
@@ -207,6 +207,14 @@ export default async function vistaReserva(contenedor, { partes, parametros }) {
 
     // --- Modificar (CU-03 flujo principal) ---
     const formulario = contenedor.querySelector('#form-modificar');
+    // Horarios libres como botones: se mantiene la duración actual del evento y
+    // la propia reserva no cuenta como ocupada (ver CAMBIOS.md)
+    if (formulario.querySelector('.selector-horarios')) {
+      const duracionReserva = duracionEntre(r.hora_inicio, r.hora_fin);
+      const selector = conectarSelectorHorarios(formulario, { duracion: () => duracionReserva, excluirId: r.id });
+      ['fecha', 'sala_id'].forEach(nombre => formulario[nombre].addEventListener('change', () => selector.actualizar()));
+      selector.actualizar();
+    }
     formulario.addEventListener('submit', async (evento) => {
       evento.preventDefault();
       const errorModificar = contenedor.querySelector('#error-modificar');

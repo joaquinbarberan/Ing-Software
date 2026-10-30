@@ -26,6 +26,11 @@ A continuación se presenta la tabla de seguimiento del proyecto, indicando las 
 | **T14** | **[TP4]** Configuración de CORS (justificado) y cookie-parser. Protección de rutas CRUD. | Joaquín, Lisandro y Lucas + IA | 25/06/2026 | 25/06/2026 | **Completo** | *Pendiente push* |
 | **T15** | **[TP4]** Creación de página `login.html` con formulario y redirección al panel de admin. | Joaquín, Lisandro y Lucas + IA | 25/06/2026 | 25/06/2026 | **Completo** | *Pendiente push* |
 | **T16** | **[TP4]** Actualización de `.env`, `.env.example` con `JWT_SECRETO` y `FRONTEND_URL`. Informe TP4. | Joaquín, Lisandro y Lucas + IA | 25/06/2026 | 25/06/2026 | **Completo** | *Pendiente push* |
+| **T17** | **[Tesis]** Cálculo de horarios libres sin superposición y endpoints de calendario mensual y horarios por día (`/disponibilidad/mes`, `/disponibilidad/dia`, `/agenda/horarios`). | Lucas + IA (Claude) | 29/10/2026 | 29/10/2026 | **Completo** | *Pendiente push* |
+| **T18** | **[Tesis]** Página pública de reservas en 4 pasos: paquete e invitados con precio, calendario de días libres, horarios como botones y envío de solicitud. | Lucas + IA (Claude) | 29/10/2026 | 29/10/2026 | **Completo** | *Pendiente push* |
+| **T19** | **[Tesis]** Tabla `solicitudes_reserva` y bandeja "Solicitudes web" en el sistema (contador, convertir en reserva con datos precargados, descartar con motivo). | Lucas + IA (Claude) | 29/10/2026 | 29/10/2026 | **Completo** | *Pendiente push* |
+| **T20** | **[Tesis]** Botones de horarios libres en Nueva reserva, Modificar reserva y Consultar disponibilidad; alta automática del cliente al guardar. | Lucas + IA (Claude) | 29/10/2026 | 29/10/2026 | **Completo** | *Pendiente push* |
+| **T21** | **[Tesis]** Documentación de los cambios (`CAMBIOS.md` y README). | Lucas + IA (Claude) | 29/10/2026 | 29/10/2026 | **Completo** | *Pendiente push* |
 
 ---
 
