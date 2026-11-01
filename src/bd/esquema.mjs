@@ -24,6 +24,16 @@ export const ESTADOS_QUE_BLOQUEAN = ['presenada', 'confirmada', 'en_curso'];
 export const ESTADOS_TERMINALES = ['realizada', 'cancelada', 'expirada'];
 
 const sentencias = [
+  // La base trabaja en hora de Córdoba (Neon usa UTC por defecto), así NOW() y CURRENT_DATE
+  // coinciden con la hora del salón. Se configura en la base y no en cada conexión:
+  // aplica a todas las conexiones nuevas, también las del pooler de Neon.
+  `DO $$
+   BEGIN
+     EXECUTE format('ALTER DATABASE %I SET timezone TO %L', current_database(), 'America/Argentina/Cordoba');
+   EXCEPTION WHEN insufficient_privilege THEN
+     NULL; -- si el usuario no es dueño de la base, se sigue igual (sólo cambia la hora de NOW())
+   END $$`,
+
   // --- SEGURIDAD Y USUARIOS ---
   `CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
