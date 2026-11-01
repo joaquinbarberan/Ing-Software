@@ -396,6 +396,12 @@ async function iniciar() {
     return;
   }
   eleccion.mes = mesDe(hoy());
+  // Si se llegó desde "Reservar este paquete" en la portada (?paquete=ID), ya queda elegido
+  const paqueteInicial = paquetes.find(p => String(p.id) === new URLSearchParams(location.search).get('paquete'));
+  if (paqueteInicial) {
+    eleccion.paquete = paqueteInicial;
+    if (paqueteInicial.personas_incluidas) cambiarPersonas(paqueteInicial.personas_incluidas);
+  }
   dibujarPaquetes();
   actualizarPrecio();
 }

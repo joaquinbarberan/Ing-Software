@@ -4,83 +4,292 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Diverty Park - Salón de Fiestas Infantiles</title>
+  <title>Diverty Park · Salón de fiestas infantiles en Argüello, Córdoba</title>
+  <meta name="description" content="Cumpleaños infantiles con juegos mecánicos, inflables, animación y catering. 4 salas temáticas en Argüello, Córdoba. Consultá la disponibilidad online.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="./recursos/css/estilos.css">
-  <link rel="icon" href="./recursos/imagenes/payasio.png" type="image/png">
-
+  <link rel="stylesheet" href="./recursos/css/sitio.css">
+  <link rel="icon" href="./recursos/imagenes/logo-chico.png" type="image/png">
 </head>
 
-<body>
+<body class="sitio">
 
-  <!-- HEADER -->
-  <header class="encabezado-principal">
-    <a href="./index.html"><img src="./recursos/imagenes/payasio.png" alt="Logo payaso" class="logo"></a>
-    <nav>
-      <ul>
-        <li><a href="./index.html">INICIO</a></li>
-        <li><a href="./salas.html">SALAS</a></li>
-        <li><a href="./reservas.html">RESERVAS</a></li>
-        <li><a href="./sistema.html">SISTEMA</a></li>
-      </ul>
-    </nav>
+  <!-- ENCABEZADO (igual en todas las páginas públicas) -->
+  <header class="sitio-encabezado">
+    <div class="sitio-contenedor">
+      <a href="./index.html" class="sitio-marca">
+        <img src="./recursos/imagenes/logo-chico.png" alt="">
+        <span>Diverty Park <small>Fiestas infantiles · Córdoba</small></span>
+      </a>
+      <button class="sitio-hamburguesa" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="sitio-menu" aria-label="Menú principal">
+        <ul>
+          <li><a href="./index.html" aria-current="page">Inicio</a></li>
+          <li><a href="./index.html#incluye">Qué incluye</a></li>
+          <li><a href="./salas.html">Salas</a></li>
+          <li><a href="./index.html#paquetes">Paquetes</a></li>
+          <li><a href="./index.html#contacto">Contacto</a></li>
+          <li><a href="./reservas.html" class="sitio-boton sitio-boton-rojo">Reservá tu fecha</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
-  <!-- SECCIÓN PRINCIPAL -->
   <main>
-    <section class="portada">
-      <div class="texto-portada">
-        <h1>DIVERTY PARK</h1>
-        <p>En Diverty Park convertimos cada cumpleaños<br>en una experiencia inolvidable</p>
+    <!-- PORTADA -->
+    <section class="inicio-portada">
+      <div class="sitio-contenedor">
+        <div>
+          <span class="inicio-etiqueta">Salón de fiestas infantiles · Argüello, Córdoba</span>
+          <h1>Un <em>parque de diversiones</em> para festejar su cumpleaños</h1>
+          <p class="inicio-bajada">
+            Juegos mecánicos, inflables, animación y catering en un mismo lugar. Elegís el paquete,
+            nosotros organizamos toda la fiesta para chicos de 1 a 13 años.
+          </p>
+          <div class="inicio-botones">
+            <a href="./reservas.html" class="sitio-boton sitio-boton-rojo">Ver fechas disponibles</a>
+            <a href="https://wa.me/5493513785678?text=Hola!%20Quiero%20consultar%20por%20un%20cumplea%C3%B1os%20en%20Diverty%20Park" target="_blank" rel="noopener" class="sitio-boton sitio-boton-blanco">
+              <svg viewBox="0 0 24 24" fill="#1f8f4e" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+              Escribinos por WhatsApp
+            </a>
+          </div>
+          <ul class="inicio-datos">
+            <li><strong>4</strong><span>salas temáticas</span></li>
+            <li><strong>+20</strong><span>años haciendo fiestas</span></li>
+            <li><strong>1 a 13</strong><span>años de edad</span></li>
+            <li><strong>9 a 23</strong><span>horas, todos los días</span></li>
+          </ul>
+        </div>
+        <div class="inicio-foto">
+          <img src="./recursos/imagenes/fachada.jpg" alt="Fachada de Diverty Park, con el payaso y las estrellas de colores en la entrada" width="960" height="1280">
+          <div class="inicio-foto-sello"><strong>Desde 2005</strong>en la zona norte de Córdoba</div>
+        </div>
       </div>
-      <img src="./recursos/imagenes/logo diverti ori.png" alt="Entrada de Diverty Park" class="imagen-portada">
     </section>
 
-    <!-- SECCIÓN BIENVENIDA -->
-    <section class="bienvenida">
-      <h2>¡Bienvenidos!</h2>
-      <p>
-        Contamos con juegos mecánicos únicos en la ciudad: mini samba, barco pirata y la innovadora ‘Torre’, además de
-        inflables y un amplio espacio para disfrutar sin límites. Nuestro salón dispone de 4 salas temáticas, ideales
-        para
-        realizar hasta 4 celebraciones simultáneamente, cada una con su propio estilo y diversión asegurada. En Diverty
-        Park, el cumpleañero y sus invitados no solo festejan: ¡viven un día mágico lleno de alegría!
-      </p>
+    <!-- QUÉ INCLUYE -->
+    <section class="inicio-seccion inicio-seccion-blanca" id="incluye">
+      <div class="sitio-contenedor">
+        <div class="inicio-encabezado-seccion">
+          <span class="inicio-volanta">Qué incluye la fiesta</span>
+          <h2>Todo en un solo lugar, sin que tengas que correr</h2>
+          <p>Nos ocupamos del espacio, los juegos, la animación y la comida. Vos sólo traés al cumpleañero.</p>
+        </div>
+        <div class="inicio-incluye">
+          <article class="inicio-tarjeta">
+            <span class="inicio-icono icono-rojo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 3v7M12 14v7M3 12h7M14 12h7"/></svg></span>
+            <h3>Juegos mecánicos</h3>
+            <p>Mini samba, barco pirata y la Torre: juegos únicos en la ciudad, en un parque cerrado y seguro.</p>
+          </article>
+          <article class="inicio-tarjeta">
+            <span class="inicio-icono icono-amarillo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M4 20h16M9 20v-5h6v5"/></svg></span>
+            <h3>Inflables y pelotero</h3>
+            <p>Un área de juegos amplia para que los chicos corran, salten y se diviertan sin límites.</p>
+          </article>
+          <article class="inicio-tarjeta">
+            <span class="inicio-icono icono-azul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M14 20c0-2.2 1.3-4 3-4s3 1.8 3 4"/></svg></span>
+            <h3>Animación</h3>
+            <p>Coordinadores que organizan juegos durante toda la fiesta, asignados según la cantidad de invitados.</p>
+          </article>
+          <article class="inicio-tarjeta">
+            <span class="inicio-icono icono-verde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21h16M5 21v-7h14v7M8 14V9h8v5M12 9V6"/><path d="M12 6c-1-1-1-2 0-3 1 1 1 2 0 3Z"/></svg></span>
+            <h3>Catering y torta</h3>
+            <p>Menú para los chicos y torta incluidos en cada paquete. Si querés más, sumás extras el mismo día.</p>
+          </article>
+          <article class="inicio-tarjeta">
+            <span class="inicio-icono icono-violeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18M5 11V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4M4 11v7M20 11v7M8 15h8"/></svg></span>
+            <h3>Espacio para adultos</h3>
+            <p>Un sector separado y cómodo para que los grandes disfruten mientras los chicos juegan.</p>
+          </article>
+          <article class="inicio-tarjeta">
+            <span class="inicio-icono icono-naranja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M8 2v4M16 2v4M4 10h16M9 15l2 2 4-4"/></svg></span>
+            <h3>Organización completa</h3>
+            <p>Reservás online, te confirmamos con la seña y el día del evento nuestro equipo se encarga de todo.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANDA CON FOTO DEL INTERIOR -->
+    <section class="inicio-banda" aria-label="El parque por dentro">
+      <div class="sitio-contenedor">
+        <h2>Un mini parque de diversiones, bajo techo</h2>
+        <p>Más que un salón: cuatro salas temáticas para hasta cuatro festejos a la vez, cada uno con su propio espacio y su propia diversión.</p>
+        <a href="./salas.html" class="sitio-boton sitio-boton-rojo">Conocé las salas</a>
+      </div>
+    </section>
+
+    <!-- SALAS (se cargan desde la base de datos) -->
+    <section class="inicio-seccion">
+      <div class="sitio-contenedor">
+        <div class="inicio-encabezado-seccion">
+          <span class="inicio-volanta">Nuestras salas</span>
+          <h2>Elegí la ambientación que más le guste</h2>
+        </div>
+        <div class="inicio-salas" id="inicio-salas">
+          <p class="inicio-nota">Cargando salas...</p>
+        </div>
+        <p class="inicio-centrado"><a href="./salas.html" class="sitio-boton sitio-boton-blanco">Ver todas las salas</a></p>
+      </div>
+    </section>
+
+    <!-- PAQUETES (precios reales desde el sistema) -->
+    <section class="inicio-seccion inicio-seccion-blanca" id="paquetes">
+      <div class="sitio-contenedor">
+        <div class="inicio-encabezado-seccion">
+          <span class="inicio-volanta">Paquetes</span>
+          <h2>Precios claros desde el primer día</h2>
+          <p>Cada paquete incluye una cantidad de invitados. Si vienen más, se suma un valor fijo por persona.</p>
+        </div>
+        <div class="inicio-paquetes" id="inicio-paquetes">
+          <p class="inicio-nota">Cargando paquetes...</p>
+        </div>
+        <p class="inicio-nota">¿Necesitás algo distinto? Armamos paquetes a medida: <a href="#contacto">escribinos</a>.</p>
+      </div>
+    </section>
+
+    <!-- CÓMO RESERVAR -->
+    <section class="inicio-seccion">
+      <div class="sitio-contenedor">
+        <div class="inicio-encabezado-seccion">
+          <span class="inicio-volanta">Cómo reservar</span>
+          <h2>Tu fecha en tres pasos</h2>
+        </div>
+        <ol class="inicio-pasos">
+          <li>
+            <h3>Elegí paquete, día y horario</h3>
+            <p>En la web ves al instante qué días y horarios están libres en cada sala. Sin llamadas ni esperas.</p>
+          </li>
+          <li>
+            <h3>Confirmá con la seña</h3>
+            <p>Nuestro equipo te contacta y, con la seña del 30 %, la fecha queda reservada a tu nombre.</p>
+          </li>
+          <li>
+            <h3>Disfrutá la fiesta</h3>
+            <p>El día del cumple recibimos a los invitados y nos ocupamos de todo. Al final se paga el saldo.</p>
+          </li>
+        </ol>
+        <p class="inicio-centrado"><a href="./reservas.html" class="sitio-boton sitio-boton-rojo">Empezar mi reserva</a></p>
+      </div>
+    </section>
+
+    <!-- PREGUNTAS FRECUENTES -->
+    <section class="inicio-seccion inicio-seccion-blanca" id="preguntas">
+      <div class="sitio-contenedor">
+        <div class="inicio-encabezado-seccion">
+          <span class="inicio-volanta">Preguntas frecuentes</span>
+          <h2>Lo que más nos consultan</h2>
+        </div>
+        <div class="inicio-preguntas">
+          <details>
+            <summary>¿Para qué edades es Diverty Park?</summary>
+            <p>Para chicos de 1 a 13 años. Los juegos y la animación se adaptan a la edad del cumpleañero y sus invitados.</p>
+          </details>
+          <details>
+            <summary>¿Cómo queda reservada la fecha?</summary>
+            <p>Cuando se registra la seña del 30 % del presupuesto. Si la seña no se abona dentro de las 72 horas, la fecha vuelve a quedar libre para otra familia.</p>
+          </details>
+          <details>
+            <summary>¿Qué pasa si vienen más invitados de los contratados?</summary>
+            <p>No hay problema: el día de la fiesta contamos a los asistentes y cada persona extra se suma al saldo con el valor fijo del paquete. Así no hay sorpresas.</p>
+          </details>
+          <details>
+            <summary>¿Puedo agregar cosas el mismo día?</summary>
+            <p>Sí. Podés sumar horas de salón, comida, bebidas, shows o souvenirs durante la fiesta. Todo queda registrado y se incluye en la cuenta final.</p>
+          </details>
+          <details>
+            <summary>¿Puedo cambiar la fecha?</summary>
+            <p>Sí, mientras haya lugar en el nuevo día y horario. Escribinos y lo reprogramamos.</p>
+          </details>
+          <details>
+            <summary>¿Qué días y en qué horario atienden?</summary>
+            <p>De lunes a domingo, de 9 a 23 h. Los fines de semana son los días más pedidos: conviene reservar con anticipación.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACTO Y UBICACIÓN -->
+    <section class="inicio-seccion" id="contacto">
+      <div class="sitio-contenedor inicio-contacto">
+        <div class="inicio-contacto-datos">
+          <h2>¿Hablamos?</h2>
+          <p>Respondemos consultas y armamos tu presupuesto por WhatsApp.</p>
+          <dl>
+            <dt>Dirección</dt>
+            <dd>Av. Rafael Núñez 6217, Argüello, Córdoba</dd>
+            <dt>WhatsApp</dt>
+            <dd><a href="https://wa.me/5493513785678" target="_blank" rel="noopener">+54 9 351 378 5678</a></dd>
+            <dt>Correo</dt>
+            <dd><a href="mailto:jpmunoz1973@gmail.com">jpmunoz1973@gmail.com</a></dd>
+            <dt>Horario</dt>
+            <dd>Lunes a domingo, de 9 a 23 h</dd>
+          </dl>
+          <div class="inicio-contacto-botones">
+            <a href="tel:+5493513785678" class="sitio-boton sitio-boton-blanco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg> Llamar</a>
+            <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Av.+Rafael+N%C3%BA%C3%B1ez+6217,+C%C3%B3rdoba,+Argentina" target="_blank" rel="noopener" class="sitio-boton sitio-boton-blanco">Cómo llegar</a>
+          </div>
+        </div>
+        <div class="inicio-mapa">
+          <iframe title="Mapa: Diverty Park, Av. Rafael Núñez 6217, Córdoba" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=Av.+Rafael+N%C3%BA%C3%B1ez+6217,+C%C3%B3rdoba,+Argentina&output=embed"></iframe>
+        </div>
+      </div>
     </section>
   </main>
 
-  <!-- PIE DE PÁGINA -->
-  <footer>
-    <div class="columna">
-      <h3>Contacto</h3>
-      <address>
-        <ul>
-          <li>📧 jpmunoz1973@gmail.com</li>
-          <li>📱 +54 9 351 378 5678</li>
-
-        </ul>
-
-      </address>
-    </div>
-
-    <div class="columna">
-      <h3>Horarios</h3>
-      <address>
-        <ul>
-          <li>Lunes a Domingo<br>de 9:00 a 23:00 hs</li>
-        </ul>
-      </address>
-    </div>
-
-    <div class="columna">
-      <h3>Ubicación</h3>
-      <address>
-        <ul>
-          <li>Avenida Rafael Nuñez 6217, Córdoba, Argentina</li>
-        </ul>
-      </address>
+  <!-- PIE (igual en todas las páginas públicas) -->
+  <footer class="sitio-pie">
+    <div class="sitio-contenedor">
+      <div>
+        <div>
+          <div class="sitio-pie-marca"><img src="./recursos/imagenes/logo-chico.png" alt="">Diverty Park</div>
+          <p>Salón de fiestas infantiles con juegos mecánicos, animación y catering. Un mini parque de diversiones en la zona norte de Córdoba desde 2005.</p>
+        </div>
+        <div>
+          <h3>Sitio</h3>
+          <ul>
+            <li><a href="./index.html#incluye">Qué incluye</a></li>
+            <li><a href="./salas.html">Salas</a></li>
+            <li><a href="./index.html#paquetes">Paquetes</a></li>
+            <li><a href="./reservas.html">Reservas</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Contacto</h3>
+          <ul>
+            <li><a href="tel:+5493513785678">+54 9 351 378 5678</a> · <a href="https://wa.me/5493513785678" target="_blank" rel="noopener">WhatsApp</a></li>
+            <li><a href="mailto:jpmunoz1973@gmail.com">jpmunoz1973@gmail.com</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Visitanos</h3>
+          <address>Av. Rafael Núñez 6217<br>Argüello, Córdoba<br>Lunes a domingo, 9 a 23 h</address>
+          <p><a href="https://www.google.com/maps/dir/?api=1&amp;destination=Av.+Rafael+N%C3%BA%C3%B1ez+6217,+C%C3%B3rdoba,+Argentina" target="_blank" rel="noopener">Cómo llegar →</a></p>
+        </div>
+      </div>
+      <div class="sitio-pie-final">
+        <span>© <span data-anio></span> Diverty Park · Dikamen SA</span>
+        <a href="./sistema.html">Acceso para el personal</a>
+      </div>
     </div>
   </footer>
 
+  <!-- Barra de acciones rápidas (sólo en celulares) -->
+  <nav class="sitio-barra-movil" aria-label="Acciones rápidas">
+    <a href="tel:+5493513785678"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg><span>Llamar</span></a>
+    <a href="https://wa.me/5493513785678" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg><span>WhatsApp</span></a>
+    <a href="./reservas.html" class="principal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span>Ver fechas</span></a>
+  </nav>
+
+  <a class="sitio-whatsapp-flotante" href="https://wa.me/5493513785678" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+  </a>
+
+  <script src="./recursos/js/sitio.js"></script>
+  <script type="module" src="./recursos/js/inicio.js"></script>
 </body>
 
 </html>
