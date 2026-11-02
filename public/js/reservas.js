@@ -576,28 +576,28 @@ function pintarSalas(datos) {
   // Combinamos los horarios de disponibilidad con los precios
   // que devuelve el endpoint público de salas.
  const salasCompletas = datos.salas.map(salaApi => {
-    const catalogo = salasCatalogo.find(
-        sala => Number(sala.id) === Number(salaApi.id)
-    ) || {};
+  const catalogo = salasCatalogo.find(
+    sala => Number(sala.id) === Number(salaApi.id)
+  ) || {};
 
-    return {
-        ...salaApi,
-        ...catalogo,
+  return {
+    ...salaApi,
+    ...catalogo,
 
-        // Recuperamos los precios del catálogo de salas
-        precio_lunes_jueves: Number(
-            catalogo.precio_lunes_jueves ??
-            salaApi.precio_lunes_jueves ?? 0
-        ),
+    horarios: salaApi.horarios || [],
 
-        precio_viernes_domingo: Number(
-            catalogo.precio_viernes_domingo ??
-            salaApi.precio_viernes_domingo ?? 0
-        ),
+    precio_lunes_jueves: Number(
+      catalogo.precio_lunes_jueves ??
+      salaApi.precio_lunes_jueves ??
+      0
+    ),
 
-        // Conservamos los horarios de disponibilidad
-        horarios: salaApi.horarios || []
-    };
+    precio_viernes_domingo: Number(
+      catalogo.precio_viernes_domingo ??
+      salaApi.precio_viernes_domingo ??
+      0
+    )
+  };
 });
 
   const compatibles = salasCompletas.filter(
@@ -1104,7 +1104,7 @@ async function iniciar() {
   try {
     const [salas, adicionales] = await Promise.all([
       pedir('/salas'),
-      pedir('/adicionales')
+      pedir('/adicionales?activos=true')
     ]);
 
     salasCatalogo = Array.isArray(salas) ? salas : [];

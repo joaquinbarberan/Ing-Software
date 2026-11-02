@@ -5,6 +5,7 @@ import 'dotenv/config';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
+import catalogoControlador from './controladores/catalogos.controller.mjs';
 import rutasSalas from './routers/salas.routers.mjs';
 import rutasUsuarios from './routers/usuarios.routers.mjs';
 import rutasAgenda from './routers/agenda.routers.mjs';
@@ -113,6 +114,7 @@ app.use('/api', (peticion, respuesta) => {
 
 // --- 6. API PÚBLICA DE SOLO LECTURA (sin protección, para la web del cliente) ---
 app.get('/salas', salaControlador.listarSalas);
+app.get('/adicionales', catalogoControlador.listarAdicionales);
 app.get('/salas/:id', salaControlador.obtenerSala);
 app.get('/disponibilidad', agendaControlador.disponibilidadPublica);
 // Página de reservas en pasos (ver CAMBIOS.md): paquetes, calendario del mes y horarios libres del día
