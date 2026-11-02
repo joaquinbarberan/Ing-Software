@@ -286,6 +286,24 @@ const agendaControlador = {
       tarifa_excedente: p.tarifa_excedente, porcentaje_sena: PORCENTAJE_SENA
     })));
   }),
+     // Adicionales disponibles para las reservas públicas
+  adicionalesPublicos: manejar(async (peticion, respuesta) => {
+    const adicionales = await catalogoModelo.listarAdicionales({
+      soloActivos: true
+    });
+
+    respuesta.json(adicionales.map(a => ({
+      id: a.id,
+      nombre: a.nombre,
+      precio: Number(a.precio),
+      unidad: a.unidad,
+      modalidad_cobro: a.modalidad_cobro,
+      cantidad_minima: Number(a.cantidad_minima),
+      anticipacion_horas: a.anticipacion_horas,
+      anulable: a.anulable
+    })));
+  }),
+
 
   // Calendario del mes: para cada día, cuántos horarios quedan libres en las salas donde entran los invitados.
   // GET /disponibilidad/mes?mes=AAAA-MM&paquete_id=&personas=

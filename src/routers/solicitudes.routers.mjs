@@ -11,5 +11,10 @@ enrutador.get('/', permitir(...VENTAS), solicitudControlador.listar);
 enrutador.get('/cantidad', permitir(...VENTAS), solicitudControlador.cantidad);
 enrutador.get('/:id', permitir(...VENTAS), solicitudControlador.obtener);
 enrutador.post('/:id/descartar', permitir(...VENTAS), solicitudControlador.descartar);
+enrutador.post(
+  '/:id/convertir',
+  permitir(...VENTAS),
+  solicitudControlador.convertir
+);
 
 export default enrutador;

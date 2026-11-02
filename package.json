@@ -27,11 +27,11 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1",
+    "express": "^5.3.0",
     "jsonwebtoken": "^9.0.3",
-    "multer": "^2.2.0",
-    "nanoid": "^5.1.11",
-    "pg": "^8.21.0"
+    "multer": "^2.5.0",
+    "nanoid": "^5.1.16",
+    "pg": "^8.23.1"
   },
   "engines": {
     "node": ">=20"

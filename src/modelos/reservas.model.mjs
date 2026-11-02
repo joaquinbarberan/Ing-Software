@@ -6,21 +6,67 @@ import conexion from '../conexion.bd.mjs';
 
 // Columnas que devolvemos siempre, con los datos de sala, cliente y paquete ya unidos
 const SELECCION = `
-  SELECT r.id, r.sala_id, r.cliente_id, r.paquete_id, r.fecha,
-         to_char(r.hora_inicio, 'HH24:MI') AS hora_inicio,
-         to_char(r.hora_fin, 'HH24:MI') AS hora_fin,
-         r.estado, r.personas_contratadas, r.importe_estimado, r.sena_requerida,
-         r.observaciones, r.motivo_cancelacion, r.fecha_alta, r.actualizado_en,
-         s.nombre AS sala_nombre,
-         c.nombre AS cliente_nombre, c.apellido AS cliente_apellido, c.dni AS cliente_dni,
-         c.telefono AS cliente_telefono, c.email AS cliente_email,
-         p.nombre AS paquete_nombre, p.es_personalizado AS paquete_personalizado,
-         p.tarifa_excedente, p.personas_incluidas,
-         u.nombre_usuario AS creado_por_usuario
+  SELECT
+    r.id,
+    r.sala_id,
+    r.cliente_id,
+    r.paquete_id,
+    r.fecha,
+
+    to_char(r.hora_inicio, 'HH24:MI') AS hora_inicio,
+    to_char(r.hora_fin, 'HH24:MI') AS hora_fin,
+
+    r.estado,
+    r.personas_contratadas,
+    r.ninos_contratados,
+    r.adultos_contratados,
+    r.precio_sala_aplicado,
+    r.importe_estimado,
+    r.sena_requerida,
+    r.observaciones,
+    r.motivo_cancelacion,
+    r.fecha_alta,
+    r.actualizado_en,
+
+    s.nombre AS sala_nombre,
+
+    c.nombre AS cliente_nombre,
+    c.apellido AS cliente_apellido,
+    c.dni AS cliente_dni,
+    c.telefono AS cliente_telefono,
+    c.email AS cliente_email,
+
+    p.nombre AS paquete_nombre,
+    p.es_personalizado AS paquete_personalizado,
+    p.tarifa_excedente,
+    p.personas_incluidas,
+
+    u.nombre_usuario AS creado_por_usuario,
+
+    COALESCE((
+      SELECT json_agg(
+        json_build_object(
+          'id', ac.id,
+          'adicional_id', ac.adicional_id,
+          'nombre', ac.nombre,
+          'unidad', ac.unidad,
+          'modalidad_cobro', ac.modalidad_cobro,
+          'cantidad', ac.cantidad,
+          'precio_unitario', ac.precio_unitario,
+          'subtotal', ac.subtotal
+        ) ORDER BY ac.id
+      )
+      FROM adicionales_contratados ac
+      WHERE ac.reserva_id = r.id
+    ), '[]'::json) AS adicionales_contratados
+
   FROM reservas r
+
   JOIN salas s ON s.id = r.sala_id
   JOIN clientes c ON c.id = r.cliente_id
-  JOIN paquetes p ON p.id = r.paquete_id
+
+  LEFT JOIN paquetes p ON p.id = r.paquete_id
+
   LEFT JOIN usuarios u ON u.id = r.creado_por
 `;
 
@@ -90,18 +136,49 @@ const reservaModelo = {
   },
 
   async crear(datos, bd = conexion) {
-    const resultado = await bd.query(`
-      INSERT INTO reservas (sala_id, cliente_id, paquete_id, fecha, hora_inicio, hora_fin, estado,
-                            personas_contratadas, importe_estimado, sena_requerida, observaciones, creado_por)
-      VALUES ($1, $2, $3, $4, $5, $6, 'presenada', $7, $8, $9, $10, $11)
-      RETURNING id
-    `, [
-      datos.sala_id, datos.cliente_id, datos.paquete_id, datos.fecha, datos.hora_inicio, datos.hora_fin,
-      datos.personas_contratadas, datos.importe_estimado, datos.sena_requerida, datos.observaciones || null,
-      datos.creado_por
-    ]);
-    return resultado.rows[0].id;
-  },
+  const resultado = await bd.query(`
+    INSERT INTO reservas (
+      sala_id,
+      cliente_id,
+      paquete_id,
+      fecha,
+      hora_inicio,
+      hora_fin,
+      estado,
+      personas_contratadas,
+      ninos_contratados,
+      adultos_contratados,
+      precio_sala_aplicado,
+      importe_estimado,
+      sena_requerida,
+      observaciones,
+      creado_por
+    )
+    VALUES (
+      $1, $2, $3, $4, $5, $6,
+      'presenada',
+      $7, $8, $9, $10, $11, $12, $13, $14
+    )
+    RETURNING id
+  `, [
+    datos.sala_id,
+    datos.cliente_id,
+    datos.paquete_id ?? null,
+    datos.fecha,
+    datos.hora_inicio,
+    datos.hora_fin,
+    datos.personas_contratadas,
+    datos.ninos_contratados ?? null,
+    datos.adultos_contratados ?? null,
+    datos.precio_sala_aplicado ?? null,
+    datos.importe_estimado,
+    datos.sena_requerida,
+    datos.observaciones || null,
+    datos.creado_por
+  ]);
+
+  return resultado.rows[0].id;
+},
 
   async actualizarDatos(id, datos, bd = conexion) {
     await bd.query(`

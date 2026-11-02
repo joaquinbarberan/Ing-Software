@@ -57,7 +57,52 @@ const sentencias = [
     imagen VARCHAR(255),
     alt_imagen VARCHAR(255)
   )`,
+// Precio de lunes a jueves
+  `ALTER TABLE salas
+   ADD COLUMN IF NOT EXISTS precio_lunes_jueves NUMERIC(12, 2)`,
 
+  // Precio de viernes a domingo
+  `ALTER TABLE salas
+   ADD COLUMN IF NOT EXISTS precio_viernes_domingo NUMERIC(12, 2)`,
+
+  // Copiamos el precio anterior para conservar los datos existentes.
+  // Solo se ejecuta cuando las nuevas columnas todavía están vacías.
+  `UPDATE salas
+   SET precio_lunes_jueves = COALESCE(precio_lunes_jueves, precio),
+       precio_viernes_domingo = COALESCE(precio_viernes_domingo, precio)
+   WHERE precio_lunes_jueves IS NULL
+      OR precio_viernes_domingo IS NULL`,
+
+  `ALTER TABLE salas
+   ALTER COLUMN precio_lunes_jueves SET DEFAULT 0`,
+
+  `ALTER TABLE salas
+   ALTER COLUMN precio_viernes_domingo SET DEFAULT 0`,
+
+  `ALTER TABLE salas
+   ALTER COLUMN precio_lunes_jueves SET NOT NULL`,
+
+  `ALTER TABLE salas
+   ALTER COLUMN precio_viernes_domingo SET NOT NULL`,
+
+  // --- CONFIGURACIÓN GENERAL DE RESERVAS ---
+
+  `CREATE TABLE IF NOT EXISTS configuracion_reservas (
+    id SMALLINT PRIMARY KEY CHECK (id = 1),
+    duracion_evento_minutos INT NOT NULL DEFAULT 150 CHECK (duracion_evento_minutos > 0),
+    minutos_ingreso_anticipado INT NOT NULL DEFAULT 10 CHECK (minutos_ingreso_anticipado >= 0),
+    minutos_tolerancia_salida INT NOT NULL DEFAULT 10 CHECK (minutos_tolerancia_salida >= 0),
+    actualizado_en TIMESTAMP NOT NULL DEFAULT NOW()
+  )`,
+
+  `INSERT INTO configuracion_reservas (
+    id,
+    duracion_evento_minutos,
+    minutos_ingreso_anticipado,
+    minutos_tolerancia_salida
+  )
+  VALUES (1, 150, 10, 10)
+  ON CONFLICT (id) DO NOTHING`,
   // --- M2: CLIENTES ---
   `CREATE TABLE IF NOT EXISTS clientes (
     id SERIAL PRIMARY KEY,
@@ -104,9 +149,23 @@ const sentencias = [
     CONSTRAINT reservas_franja_valida CHECK (hora_fin > hora_inicio),
     CONSTRAINT reservas_estado_valido CHECK (estado IN ('presenada','confirmada','en_curso','realizada','cancelada','expirada'))
   )`,
+  // --- MIGRACIÓN: RESERVAS SIN PAQUETES OBLIGATORIOS ---
+
+  `ALTER TABLE reservas
+   ALTER COLUMN paquete_id DROP NOT NULL`,
+
+  `ALTER TABLE reservas
+   ADD COLUMN IF NOT EXISTS ninos_contratados INTEGER`,
+
+  `ALTER TABLE reservas
+   ADD COLUMN IF NOT EXISTS adultos_contratados INTEGER`,
+
+  `ALTER TABLE reservas
+   ADD COLUMN IF NOT EXISTS precio_sala_aplicado NUMERIC(12,2)`,
+
   `CREATE INDEX IF NOT EXISTS idx_reservas_sala_fecha ON reservas (sala_id, fecha)`,
   `CREATE INDEX IF NOT EXISTS idx_reservas_fecha ON reservas (fecha)`,
-
+  
   // Trazabilidad de cada alta, modificación o cancelación (RNF06, R02.7, R03.6)
   `CREATE TABLE IF NOT EXISTS reservas_historial (
     id SERIAL PRIMARY KEY,
@@ -143,6 +202,25 @@ const sentencias = [
     CONSTRAINT solicitudes_estado_valido CHECK (estado IN ('pendiente','convertida','descartada')),
     CONSTRAINT solicitudes_franja_valida CHECK (hora_fin > hora_inicio)
   )`,
+  // --- MIGRACIÓN: SOLICITUDES SIN PAQUETES OBLIGATORIOS ---
+
+  `ALTER TABLE solicitudes_reserva
+   ALTER COLUMN paquete_id DROP NOT NULL`,
+
+  `ALTER TABLE solicitudes_reserva
+   ADD COLUMN IF NOT EXISTS ninos INTEGER`,
+
+  `ALTER TABLE solicitudes_reserva
+   ADD COLUMN IF NOT EXISTS adultos INTEGER`,
+
+  `ALTER TABLE solicitudes_reserva
+   ADD COLUMN IF NOT EXISTS precio_sala_estimado NUMERIC(12,2)`,
+
+  `ALTER TABLE solicitudes_reserva
+   ADD COLUMN IF NOT EXISTS importe_estimado NUMERIC(12,2)`,
+
+  `ALTER TABLE solicitudes_reserva
+   ADD COLUMN IF NOT EXISTS sena_requerida NUMERIC(12,2)`,
   `CREATE INDEX IF NOT EXISTS idx_solicitudes_estado ON solicitudes_reserva (estado, fecha)`,
 
   // --- M3: GESTIÓN DE EVENTO ---
@@ -164,6 +242,67 @@ const sentencias = [
     unidad VARCHAR(30) NOT NULL DEFAULT 'unidad',
     activo BOOLEAN NOT NULL DEFAULT TRUE
   )`,
+   // --- CONFIGURACIÓN DE ADICIONALES ---
+
+  // Define cómo se cobra cada adicional
+  `ALTER TABLE adicionales
+   ADD COLUMN IF NOT EXISTS modalidad_cobro VARCHAR(20)
+   NOT NULL DEFAULT 'cantidad'
+   CHECK (modalidad_cobro IN ('cantidad', 'por_evento'))`,
+
+  // Cantidad mínima que se puede contratar (ej. 20 pizzetas)
+  `ALTER TABLE adicionales
+   ADD COLUMN IF NOT EXISTS cantidad_minima NUMERIC(10,2)
+   NOT NULL DEFAULT 1`,
+
+  // Anticipación requerida para contratar
+  `ALTER TABLE adicionales
+   ADD COLUMN IF NOT EXISTS anticipacion_horas INTEGER
+   NOT NULL DEFAULT 72`,
+
+  // Los adicionales contratados no se pueden anular
+  `ALTER TABLE adicionales
+   ADD COLUMN IF NOT EXISTS anulable BOOLEAN
+   NOT NULL DEFAULT FALSE`,
+
+  // --- ADICIONALES CONTRATADOS EN RESERVAS ---
+
+  `CREATE TABLE IF NOT EXISTS adicionales_contratados (
+    id SERIAL PRIMARY KEY,
+
+    solicitud_id INT REFERENCES solicitudes_reserva(id),
+    reserva_id INT REFERENCES reservas(id),
+
+    adicional_id INT NOT NULL REFERENCES adicionales(id),
+
+    nombre VARCHAR(120) NOT NULL,
+    unidad VARCHAR(30) NOT NULL DEFAULT 'unidad',
+    modalidad_cobro VARCHAR(20) NOT NULL DEFAULT 'cantidad',
+
+    cantidad NUMERIC(10,2) NOT NULL DEFAULT 1,
+    precio_unitario NUMERIC(12,2) NOT NULL,
+    subtotal NUMERIC(12,2) NOT NULL,
+
+    anticipacion_horas INTEGER NOT NULL DEFAULT 72,
+    anulable BOOLEAN NOT NULL DEFAULT FALSE,
+
+    creado_en TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT adicional_contratado_origen
+      CHECK (solicitud_id IS NOT NULL OR reserva_id IS NOT NULL),
+
+    CONSTRAINT adicional_contratado_cantidad
+      CHECK (cantidad > 0),
+
+    CONSTRAINT adicional_contratado_importes
+      CHECK (precio_unitario >= 0 AND subtotal >= 0)
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_adicionales_solicitud
+   ON adicionales_contratados(solicitud_id)`,
+
+  `CREATE INDEX IF NOT EXISTS idx_adicionales_reserva
+   ON adicionales_contratados(reserva_id)`,
 
   // Comanda digital: consumos cargados durante el evento (RF08). No se borran, se anulan (RN09).
   `CREATE TABLE IF NOT EXISTS consumos (

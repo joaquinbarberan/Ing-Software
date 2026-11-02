@@ -44,7 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const campoNombre = document.getElementById('nombre');
   const campoCapNinos = document.getElementById('capacidad_ninos');
   const campoCapAdultos = document.getElementById('capacidad_adultos');
-  const campoPrecio = document.getElementById('precio');
+  const campoPrecioLunes = document.getElementById('precio_lunes_jueves');
+  const campoPrecioViernes = document.getElementById('precio_viernes_domingo');
   const campoDescripcion = document.getElementById('descripcion');
   const campoImagen = document.getElementById('imagen');
   const campoAltImagen = document.getElementById('alt_imagen');
@@ -104,7 +105,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             <td><strong>${sala.nombre}</strong></td>
             <td>${sala.capacidad_ninos} niños</td>
             <td>${sala.capacidad_adultos} adultos</td>
-            <td><strong>$${parseFloat(sala.precio).toLocaleString('es-AR')}</strong></td>
+            <td>
+  <strong>$${Number(sala.precio_lunes_jueves).toLocaleString('es-AR')}</strong>
+</td>
+<td>
+  <strong>$${Number(sala.precio_viernes_domingo).toLocaleString('es-AR')}</strong>
+</td>
             <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${sala.descripcion}">
               ${sala.descripcion || 'Sin descripción'}
             </td>
@@ -190,7 +196,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       campoNombre.value = sala.nombre;
       campoCapNinos.value = sala.capacidad_ninos;
       campoCapAdultos.value = sala.capacidad_adultos;
-      campoPrecio.value = sala.precio;
+      campoPrecioLunes.value = sala.precio_lunes_jueves;
+campoPrecioViernes.value = sala.precio_viernes_domingo;
       campoDescripcion.value = sala.descripcion;
       campoAltImagen.value = sala.alt_imagen;
 

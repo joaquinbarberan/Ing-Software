@@ -1,6 +1,6 @@
+
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,176 +10,423 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="./recursos/css/estilos.css">
   <link rel="stylesheet" href="./recursos/css/sitio.css">
-  <link rel="stylesheet" href="./recursos/css/estilos.css">
-  <link rel="stylesheet" href="./recursos/css/sitio.css">
   <link rel="icon" href="./recursos/imagenes/logo-chico.png" type="image/png">
+
+  <style>
+    .rv-progreso { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .rv-invitados-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .rv-invitado {
+      padding: 16px;
+      border: 1px solid var(--rv-borde);
+      border-radius: 12px;
+    }
+    .rv-invitado > label {
+      display: block;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .rv-reglas {
+      margin: 14px 0 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #fff8e8;
+      color: #684d16;
+      font-size: .9rem;
+    }
+    .rv-adicionales { display: grid; gap: 10px; }
+    .rv-adicional {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--rv-borde);
+      border-radius: 12px;
+      background: #fff;
+    }
+    .rv-adicional label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .rv-adicional input[type="checkbox"] {
+      width: 19px;
+      height: 19px;
+      margin-top: 2px;
+      accent-color: #d92332;
+    }
+    .rv-adicional-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .rv-adicional-info small {
+      color: var(--rv-texto-suave);
+      font-weight: 400;
+    }
+    .rv-adicional-precio {
+      text-align: right;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .rv-adicional-cantidad {
+      width: 90px;
+      padding: 8px;
+      border: 1px solid var(--rv-borde);
+      border-radius: 8px;
+      font: inherit;
+    }
+    .rv-adicional-cantidad:disabled { opacity: .45; }
+    .rv-tarifa-sala {
+      margin-top: 5px;
+      color: #b51d2a;
+      font-weight: 800;
+    }
+    .rv-tarifa-sala small {
+      display: block;
+      color: var(--rv-texto-suave);
+      font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      .rv-invitados-grid { grid-template-columns: 1fr; }
+      .rv-progreso { gap: 2px; }
+      .rv-progreso li { font-size: .68rem; }
+      .rv-progreso li span {
+        width: 28px;
+        height: 28px;
+      }
+      .rv-adicional { grid-template-columns: 1fr; }
+      .rv-adicional-precio {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+      }
+    }
+  </style>
 </head>
 
 <body class="sitio pagina-reserva">
-  <!-- ENCABEZADO (igual en todas las páginas públicas) -->
+
   <header class="sitio-encabezado">
     <div class="sitio-contenedor">
       <a href="./index.html" class="sitio-marca">
         <img src="./recursos/imagenes/logo-chico.png" alt="">
         <span>Diverty Park <small>Fiestas infantiles · Córdoba</small></span>
       </a>
-      <button class="sitio-hamburguesa" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+
+      <button class="sitio-hamburguesa" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
       <nav class="sitio-menu" aria-label="Menú principal">
         <ul>
           <li><a href="./index.html">Inicio</a></li>
           <li><a href="./index.html#incluye">Qué incluye</a></li>
           <li><a href="./salas.html">Salas</a></li>
-          <li><a href="./index.html#paquetes">Paquetes</a></li>
           <li><a href="./index.html#contacto">Contacto</a></li>
-          <li><a href="./reservas.html" class="sitio-boton sitio-boton-rojo">Reservá tu fecha</a></li>
+          <li>
+            <a href="./reservas.html" class="sitio-boton sitio-boton-rojo">
+              Reservá tu fecha
+            </a>
+          </li>
         </ul>
       </nav>
     </div>
   </header>
 
-
   <main class="contenedor-reserva">
-
     <div class="rv-caja">
-      <h1 class="titulo-reserva-central">Reservá tu Fiesta</h1>
-      <p class="rv-intro">En 4 pasos elegís el paquete, el día y el horario. Te mostramos sólo los horarios que están libres.</p>
 
-      <!-- Indicador de pasos: los ya completados se pueden tocar para volver -->
+      <h1 class="titulo-reserva-central">Reservá tu Fiesta</h1>
+      <p class="rv-intro">
+        En 5 pasos indicás tus invitados, elegís el día, la sala,
+        el horario y los adicionales.
+      </p>
+
       <ol class="rv-progreso" id="rv-progreso" aria-label="Pasos de la reserva">
-        <li data-ir="1"><span>1</span> Paquete</li>
+        <li data-ir="1"><span>1</span> Invitados</li>
         <li data-ir="2"><span>2</span> Día</li>
-        <li data-ir="3"><span>3</span> Horario</li>
-        <li data-ir="4"><span>4</span> Tus datos</li>
+        <li data-ir="3"><span>3</span> Sala y horario</li>
+        <li data-ir="4"><span>4</span> Adicionales</li>
+        <li data-ir="5"><span>5</span> Tus datos</li>
       </ol>
 
-      <!-- PASO 1: paquete e invitados -->
+      <!-- PASO 1: INVITADOS -->
       <section class="rv-paso" data-paso="1">
-        <h2>¿Qué fiesta querés?</h2>
-        <div class="rv-paquetes" id="rv-paquetes" role="radiogroup" aria-label="Paquetes">
-          <p class="rv-cargando">Cargando paquetes...</p>
-        </div>
+        <h2>¿Cuántos invitados van a venir?</h2>
+        <p class="rv-ayuda">
+          Indicá por separado la cantidad de niños y adultos.
+        </p>
 
-        <div class="rv-invitados">
-          <label for="rv-personas">¿Cuántos invitados van a ser? <small>(niños y adultos)</small></label>
-          <div class="rv-contador">
-            <button type="button" data-cambiar="-5" aria-label="Restar 5">−5</button>
-            <button type="button" data-cambiar="-1" aria-label="Restar 1">−</button>
-            <input type="number" id="rv-personas" min="1" inputmode="numeric" value="30">
-            <button type="button" data-cambiar="1" aria-label="Sumar 1">+</button>
-            <button type="button" data-cambiar="5" aria-label="Sumar 5">+5</button>
+        <div class="rv-invitados-grid">
+          <div class="rv-invitado">
+            <label for="rv-ninos">Niños</label>
+            <div class="rv-contador">
+              <button type="button" data-cambiar-ninos="-1">−</button>
+              <input type="number" id="rv-ninos" min="0" max="200" value="30">
+              <button type="button" data-cambiar-ninos="1">+</button>
+            </div>
           </div>
-          <p class="rv-ayuda" id="rv-ayuda-personas"></p>
+
+          <div class="rv-invitado">
+            <label for="rv-adultos">Adultos</label>
+            <div class="rv-contador">
+              <button type="button" data-cambiar-adultos="-1">−</button>
+              <input type="number" id="rv-adultos" min="0" max="200" value="0">
+              <button type="button" data-cambiar-adultos="1">+</button>
+            </div>
+          </div>
         </div>
 
-        <div class="rv-precio" id="rv-precio" hidden></div>
+        <p class="rv-ayuda" id="rv-ayuda-personas" aria-live="polite"></p>
+
+        <div class="rv-reglas">
+          El precio de la sala incluye hasta 30 niños.
+          Los niños excedentes se calculan aparte:
+          $5.500 cada uno sin coordinador extra o
+          $4.000 cada uno al contratarlo.
+        </div>
+
+        <p id="rv-carga-error" class="rv-error" role="alert" hidden></p>
 
         <div class="rv-acciones">
-          <button type="button" class="rv-boton" data-siguiente="2" id="rv-ir-dia" disabled>Elegir el día →</button>
+          <button type="button" class="rv-boton" id="rv-ir-dia"
+            data-siguiente="2" disabled>
+            Elegir el día →
+          </button>
         </div>
       </section>
 
-      <!-- PASO 2: calendario con disponibilidad -->
+      <!-- PASO 2: CALENDARIO -->
       <section class="rv-paso" data-paso="2" hidden>
-        <h2>Elegí el día</h2>
+        <h2>Elegí el día de tu fiesta</h2>
+
         <div class="rv-calendario">
           <div class="rv-cal-cabecera">
-            <button type="button" class="rv-cal-flecha" id="rv-mes-anterior" aria-label="Mes anterior">‹</button>
+            <button type="button" class="rv-cal-flecha"
+              id="rv-mes-anterior" aria-label="Mes anterior">‹</button>
+
             <strong id="rv-mes-titulo" aria-live="polite"></strong>
-            <button type="button" class="rv-cal-flecha" id="rv-mes-siguiente" aria-label="Mes siguiente">›</button>
+
+            <button type="button" class="rv-cal-flecha"
+              id="rv-mes-siguiente" aria-label="Mes siguiente">›</button>
           </div>
-          <div class="rv-cal-semana" aria-hidden="true"><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span></div>
+
+          <div class="rv-cal-semana" aria-hidden="true">
+            <span>Lu</span><span>Ma</span><span>Mi</span>
+            <span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span>
+          </div>
+
           <div class="rv-cal-dias" id="rv-cal-dias"></div>
+
           <ul class="rv-leyenda">
             <li><i class="libre"></i> Hay horarios</li>
             <li><i class="pocos"></i> Últimos horarios</li>
             <li><i class="completo"></i> Sin lugar</li>
           </ul>
         </div>
+
         <div class="rv-acciones">
-          <button type="button" class="rv-boton rv-boton-secundario" data-siguiente="1">← Volver</button>
+          <button type="button" class="rv-boton rv-boton-secundario"
+            data-siguiente="1">← Volver</button>
         </div>
       </section>
 
-      <!-- PASO 3: sala y horario -->
+      <!-- PASO 3: SALA Y HORARIO -->
       <section class="rv-paso" data-paso="3" hidden>
         <h2>Elegí sala y horario</h2>
         <p class="rv-subtitulo" id="rv-dia-elegido"></p>
-        <div id="rv-salas"></div>
+
+        <div id="rv-salas">
+          <p class="rv-cargando">Buscando horarios libres...</p>
+        </div>
+
         <div class="rv-acciones">
-          <button type="button" class="rv-boton rv-boton-secundario" data-siguiente="2">← Cambiar el día</button>
+          <button type="button" class="rv-boton rv-boton-secundario"
+            data-siguiente="2">← Cambiar el día</button>
         </div>
       </section>
 
-      <!-- PASO 4: datos de contacto y envío -->
+      <!-- PASO 4: ADICIONALES -->
       <section class="rv-paso" data-paso="4" hidden>
+        <h2>¿Querés agregar algo a tu fiesta?</h2>
+
+        <p class="rv-subtitulo">
+          Los adicionales son opcionales. Los pedidos deben realizarse
+          con al menos 72 horas de anticipación y no pueden anularse
+          una vez encargados.
+        </p>
+
+        <div id="rv-adicionales" class="rv-adicionales">
+          <p class="rv-cargando">Cargando adicionales...</p>
+        </div>
+
+        <div class="rv-precio" id="rv-precio" hidden></div>
+
+        <div class="rv-acciones">
+          <button type="button" class="rv-boton rv-boton-secundario"
+            data-siguiente="3">← Volver a sala y horario</button>
+
+          <button type="button" class="rv-boton" data-siguiente="5">
+            Continuar con mis datos →
+          </button>
+        </div>
+      </section>
+
+      <!-- PASO 5: DATOS PERSONALES -->
+      <section class="rv-paso" data-paso="5" hidden>
         <h2>Tus datos</h2>
+
         <div class="rv-resumen" id="rv-resumen"></div>
 
         <form id="rv-formulario" class="rv-formulario" novalidate>
           <div class="rv-fila">
-            <label>Nombre<input name="nombre" autocomplete="given-name" required></label>
-            <label>Apellido<input name="apellido" autocomplete="family-name" required></label>
+            <label>
+              Nombre
+              <input name="nombre" autocomplete="given-name" required>
+            </label>
+
+            <label>
+              Apellido
+              <input name="apellido" autocomplete="family-name" required>
+            </label>
           </div>
+
           <div class="rv-fila">
-            <label>DNI<input name="dni" inputmode="numeric" autocomplete="off" placeholder="Sin puntos" required></label>
-            <label>Teléfono / WhatsApp<input name="telefono" type="tel" autocomplete="tel" placeholder="351 555-1234" required></label>
+            <label>
+              DNI
+              <input name="dni" inputmode="numeric"
+                autocomplete="off" placeholder="Sin puntos" required>
+            </label>
+
+            <label>
+              Teléfono / WhatsApp
+              <input name="telefono" type="tel"
+                autocomplete="tel" placeholder="351 555-1234" required>
+            </label>
           </div>
-          <label>Correo electrónico <small>(opcional)</small><input name="email" type="email" autocomplete="email"></label>
-          <label>Comentarios <small>(opcional: temática, edad del cumpleañero...)</small><textarea name="comentarios" rows="3" maxlength="500"></textarea></label>
-          <!-- Campo trampa contra robots: las personas no lo ven -->
-          <label class="rv-trampa" aria-hidden="true">Sitio web<input name="sitio_web" tabindex="-1" autocomplete="off"></label>
+
+          <label>
+            Correo electrónico <small>(opcional)</small>
+            <input name="email" type="email" autocomplete="email">
+          </label>
+
+          <label>
+            Comentarios
+            <small>(opcional: temática, edad del cumpleañero...)</small>
+            <textarea name="comentarios" rows="3" maxlength="500"></textarea>
+          </label>
+
+          <label class="rv-trampa" aria-hidden="true">
+            Sitio web
+            <input name="sitio_web" tabindex="-1" autocomplete="off">
+          </label>
+
           <p class="rv-error" id="rv-error" role="alert" hidden></p>
-          <p class="rv-privacidad">Usamos tus datos sólo para gestionar esta reserva (Ley 25.326 de Protección de Datos Personales).</p>
+
+          <p class="rv-privacidad">
+            Usamos tus datos sólo para gestionar esta solicitud
+            (Ley 25.326 de Protección de Datos Personales).
+            La fecha se confirma cuando el equipo registra la seña.
+          </p>
+
           <div class="rv-acciones">
-            <button type="button" class="rv-boton rv-boton-secundario" data-siguiente="3">← Volver</button>
-            <button type="submit" class="rv-boton">Enviar solicitud</button>
+            <button type="button" class="rv-boton rv-boton-secundario"
+              data-siguiente="4">← Volver a adicionales</button>
+
+            <button type="submit" class="rv-boton">
+              Enviar solicitud
+            </button>
           </div>
         </form>
       </section>
 
-      <!-- Confirmación -->
-      <section class="rv-paso rv-final" data-paso="5" hidden>
+      <!-- CONFIRMACIÓN -->
+      <section class="rv-paso rv-final" data-paso="6" hidden>
         <div class="rv-tilde" aria-hidden="true">✓</div>
+
         <h2 id="rv-final-titulo">¡Recibimos tu solicitud!</h2>
+
         <div class="rv-resumen" id="rv-final-resumen"></div>
-        <p>Nuestro equipo de ventas te va a contactar para pasarte los datos de la seña.
-          <strong>La fecha queda reservada cuando se registra la seña.</strong></p>
-        <a class="boton-whatsapp" id="rv-whatsapp" target="_blank" rel="noopener">Avisar por WhatsApp para agilizar</a>
-        <p><button type="button" class="rv-enlace" id="rv-otra">Hacer otra solicitud</button></p>
+
+        <p>
+          Nuestro equipo de ventas te va a contactar para confirmar
+          el presupuesto y pasarte los datos de la seña.
+          <strong>La fecha queda reservada cuando se registra la seña.</strong>
+        </p>
+
+        <a class="boton-whatsapp" id="rv-whatsapp"
+          target="_blank" rel="noopener">
+          Avisar por WhatsApp para agilizar
+        </a>
+
+        <p>
+          <button type="button" class="rv-enlace" id="rv-otra">
+            Hacer otra solicitud
+          </button>
+        </p>
       </section>
+
     </div>
   </main>
 
-  <!-- PIE (igual en todas las páginas públicas) -->
   <footer class="sitio-pie">
     <div class="sitio-contenedor">
       <div>
         <div>
-          <div class="sitio-pie-marca"><img src="./recursos/imagenes/logo-chico.png" alt="">Diverty Park</div>
-          <p>Salón de fiestas infantiles con juegos mecánicos, animación y catering. Un mini parque de diversiones en la zona norte de Córdoba desde 2005.</p>
+          <div class="sitio-pie-marca">
+            <img src="./recursos/imagenes/logo-chico.png" alt="">
+            Diverty Park
+          </div>
+          <p>
+            Salón de fiestas infantiles con juegos mecánicos,
+            animación y catering. Un mini parque de diversiones
+            en la zona norte de Córdoba desde 2005.
+          </p>
         </div>
+
         <div>
           <h3>Sitio</h3>
           <ul>
             <li><a href="./index.html#incluye">Qué incluye</a></li>
             <li><a href="./salas.html">Salas</a></li>
-            <li><a href="./index.html#paquetes">Paquetes</a></li>
             <li><a href="./reservas.html">Reservas</a></li>
           </ul>
         </div>
+
         <div>
           <h3>Contacto</h3>
           <ul>
-            <li><a href="tel:+5493513785678">+54 9 351 378 5678</a> · <a href="https://wa.me/5493513785678" target="_blank" rel="noopener">WhatsApp</a></li>
-            <li><a href="mailto:jpmunoz1973@gmail.com">jpmunoz1973@gmail.com</a></li>
+            <li>
+              <a href="tel:+5493513785678">+54 9 351 378 5678</a> ·
+              <a href="https://wa.me/5493513785678"
+                target="_blank" rel="noopener">WhatsApp</a>
+            </li>
+            <li><a href="mail:jpmunoz1973@gmail.com">jpmunoz1973@gmail.com</a></li>
           </ul>
         </div>
+
         <div>
           <h3>Visitanos</h3>
-          <address>Av. Rafael Núñez 6217<br>Argüello, Córdoba<br>Lunes a domingo, 9 a 23 h</address>
-          <p><a href="https://www.google.com/maps/dir/?api=1&amp;destination=Av.+Rafael+N%C3%BA%C3%B1ez+6217,+C%C3%B3rdoba,+Argentina" target="_blank" rel="noopener">Cómo llegar →</a></p>
+          <address>
+            Av. Rafael Núñez 6217<br>
+            Argüello, Córdoba<br>
+            Lunes a domingo, 9 a 23 h
+          </address>
+          <p>
+            <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Av.+Rafael+N%C3%BA%C3%B1ez+6217,+C%C3%B3rdoba,+Argentina"
+              target="_blank" rel="noopener">Cómo llegar →</a>
+          </p>
         </div>
       </div>
+
       <div class="sitio-pie-final">
         <span>© <span data-anio></span> Diverty Park · Dikamen SA</span>
         <a href="./sistema.html">Acceso para el personal</a>
@@ -187,14 +434,8 @@
     </div>
   </footer>
 
-  <a class="sitio-whatsapp-flotante" href="https://wa.me/5493513785678" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp">
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
-  </a>
-
-
   <script src="./recursos/js/sitio.js"></script>
   <script type="module" src="./recursos/js/reservas.js"></script>
 
 </body>
-
 </html>

@@ -43,7 +43,24 @@ function tarjeta(s) {
       <div>
         <h3>N.º ${s.id} · ${nombre} <span class="nota">· recibida ${fechaHora(s.creada_en)}</span></h3>
         <p><strong>${fechaLarga(s.fecha)}</strong>, de ${s.hora_inicio} a ${s.hora_fin} · ${esc(s.sala_nombre)}</p>
-        <p>${esc(s.paquete_nombre)} · ${s.personas} invitados</p>
+        <p>
+  ${s.ninos ?? '—'} niños · ${s.adultos ?? '—'} adultos
+</p>
+
+${s.importe_estimado != null ? `
+  <p>
+    Presupuesto: <strong>$${Number(s.importe_estimado).toLocaleString('es-AR')}</strong>
+    · Seña: $${Number(s.sena_requerida).toLocaleString('es-AR')}
+  </p>
+` : ''}
+
+${s.adicionales?.length ? `
+  <p class="nota">
+    Adicionales: ${s.adicionales.map(a =>
+      `${esc(a.nombre)} × ${a.cantidad}`
+    ).join(', ')}
+  </p>
+` : '<p class="nota">Sin adicionales.</p>'}
         <p class="nota">DNI ${esc(s.dni)} · Tel. ${esc(s.telefono)}${s.email ? ` · ${esc(s.email)}` : ''}
           ${s.cliente_id ? ` · <a href="#/clientes/${s.cliente_id}">ya es cliente</a>` : ' · cliente nuevo'}</p>
         ${s.comentarios ? `<p class="nota">“${esc(s.comentarios)}”</p>` : ''}
@@ -87,8 +104,26 @@ export default async function vistaSolicitudes(contenedor, { parametros }) {
 
   lista.addEventListener('click', async (evento) => {
     const convertir = evento.target.closest('[data-convertir]');
-    if (convertir) return navegar(`nueva-reserva${query({ solicitud: convertir.dataset.convertir })}`);
 
+if (convertir) {
+  try {
+    const resultado = await api.post(
+      `/solicitudes/${convertir.dataset.convertir}/convertir`,
+      {}
+    );
+
+    avisar(`Reserva N.º ${resultado.reserva_id} creada correctamente.`);
+
+    await cargar();
+
+    navegar(`reservas/${resultado.reserva_id}`);
+
+  } catch (error) {
+    mostrarError(error);
+  }
+
+  return;
+}
     const descartar = evento.target.closest('[data-descartar]');
     if (descartar) {
       const motivo = await confirmar({
