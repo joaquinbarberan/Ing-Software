@@ -10,6 +10,7 @@
     { "source": "/disponibilidad", "destination": "/api" },
     { "source": "/disponibilidad/:ruta*", "destination": "/api" },
     { "source": "/paquetes", "destination": "/api" },
+    { "source": "/adicionales", "destination": "/api" },
     { "source": "/solicitudes", "destination": "/api" }
   ],
   "crons": [

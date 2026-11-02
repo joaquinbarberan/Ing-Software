@@ -119,7 +119,6 @@ app.get('/salas/:id', salaControlador.obtenerSala);
 app.get('/disponibilidad', agendaControlador.disponibilidadPublica);
 // Página de reservas en pasos (ver CAMBIOS.md): paquetes, calendario del mes y horarios libres del día
 app.get('/paquetes', agendaControlador.paquetesPublicos);
-app.get('/adicionales', agendaControlador.adicionalesPublicos);
 app.get('/disponibilidad/mes', agendaControlador.calendarioPublico);
 app.get('/disponibilidad/dia', agendaControlador.horariosPublicos);
 // El cliente deja una SOLICITUD (no una reserva): Ventas la revisa y la convierte en reserva
