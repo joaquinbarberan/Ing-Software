@@ -657,3 +657,43 @@ footer.sitio-pie { text-align: left; align-items: stretch; }
   footer.sitio-pie { padding: 40px 0 20px; }
   .sitio-pie li a, .sitio-pie p a { display: inline-block; padding: 6px 0; }
 }
+/* Precios de las salas */
+.sala-precios {
+    background: #fff8ed;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 24px;
+}
+
+.sala-precios h3 {
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+}
+
+.sala-precios div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eadfce;
+}
+
+.sala-precios div:last-child {
+    border-bottom: none;
+}
+
+.sala-precios strong {
+    color: #df2034;
+    font-size: 1.2rem;
+}
+
+.precio-sala-inicio {
+    margin-top: 8px !important;
+    color: #df2034 !important;
+}
+
+.precio-sala-inicio strong {
+    display: block;
+    font-size: 1.15rem;
+}

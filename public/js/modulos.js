@@ -10,51 +10,93 @@ function escapar(texto) {
     return div.innerHTML;
 }
 
-// "SALA AMARILLA" -> "Sala Amarilla"
 function nombreSala(nombre) {
-    return nombre.toLowerCase().replace(/(^|\s)\S/g, letra => letra.toUpperCase());
+    return String(nombre || 'Sala').toLowerCase()
+        .replace(/(^|\s)\S/g, letra => letra.toUpperCase());
+}
+
+function pesos(monto) {
+    return '$' + Number(monto || 0).toLocaleString('es-AR', {
+        maximumFractionDigits: 0
+    });
 }
 
 export const renderizarSalas = (listaSalas, contenedor) => {
     if (!listaSalas.length) {
-        contenedor.innerHTML = '<p class="inicio-nota">Pronto vas a ver acá nuestras salas.</p>';
+        contenedor.innerHTML =
+            '<p class="inicio-nota">Pronto vas a ver acá nuestras salas.</p>';
         return;
     }
 
     const htmlSalas = listaSalas.map(sala => {
-        const nombre = nombreSala(sala.nombre || 'Sala');
+        const nombre = nombreSala(sala.nombre);
         const imagen = sala.imagen || './recursos/imagenes/fachada.jpg';
-        const capNinos = sala.capacidad_ninos || 0;
-        const capAdultos = sala.capacidad_adultos || 0;
 
-        // Reemplazamos los marcadores de capacidad de la descripción ([N] niños y [A] adultos)
+        const capNinos = Number(sala.capacidad_ninos) || 0;
+        const capAdultos = Number(sala.capacidad_adultos) || 0;
+
+        const precioSemana = pesos(sala.precio_lunes_jueves);
+        const precioFinSemana = pesos(sala.precio_viernes_domingo);
+
         const descripcion = (sala.descripcion || '')
             .replace('[N]', capNinos)
             .replace('[A]', capAdultos);
 
         return `
             <article class="sala-detalle" id="sala-${sala.id}">
+
                 <div class="sala-detalle-foto">
-                    <img src="${escapar(imagen)}" alt="${escapar(sala.alt_imagen || nombre)}" loading="lazy"
-                         onerror="this.src='./recursos/imagenes/fachada.jpg'">
+                    <img
+                        src="${escapar(imagen)}"
+                        alt="${escapar(sala.alt_imagen || nombre)}"
+                        loading="lazy"
+                        onerror="this.src='./recursos/imagenes/fachada.jpg'">
                 </div>
+
                 <div class="sala-detalle-texto">
+
                     <h2>${escapar(nombre)}</h2>
-                    ${descripcion ? `<p>${escapar(descripcion)}</p>` : ''}
+
+                    ${descripcion
+                        ? `<p>${escapar(descripcion)}</p>`
+                        : ''}
+
                     <ul class="sala-capacidad">
                         <li>${capNinos} <span>niños</span></li>
                         <li>${capAdultos} <span>adultos</span></li>
                         <li>${capNinos + capAdultos} <span>invitados en total</span></li>
                     </ul>
-                    <div><a class="sitio-boton sitio-boton-rojo" href="./reservas.html">Ver fechas para esta sala</a></div>
+
+                    <div class="sala-precios">
+                        <h3>Precios de la sala</h3>
+
+                        <div>
+                            <span>Lunes a jueves</span>
+                            <strong>${precioSemana}</strong>
+                        </div>
+
+                        <div>
+                            <span>Viernes a domingo</span>
+                            <strong>${precioFinSemana}</strong>
+                        </div>
+                    </div>
+
+                    <div>
+                        <a
+                            class="sitio-boton sitio-boton-rojo"
+                            href="./reservas.html">
+                            Ver fechas para esta sala
+                        </a>
+                    </div>
+
                 </div>
             </article>
         `;
     }).join('');
 
-    // Insertamos todo el HTML generado en el contenedor dinámico
     contenedor.innerHTML = htmlSalas;
 
-    // Si se llegó desde la portada con #sala-N, bajamos hasta esa sala ya dibujada
-    if (location.hash) document.querySelector(location.hash)?.scrollIntoView();
+    if (location.hash) {
+        document.querySelector(location.hash)?.scrollIntoView();
+    }
 };
