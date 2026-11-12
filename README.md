@@ -138,7 +138,18 @@ CAMBIOS.md               registro detallado de cada mejora
 npm run backup
 ```
 
-Genera un archivo en `backups/` (se conservan las últimas 30). Si `pg_dump` no está en el PATH, indicar su ruta en `PG_DUMP` dentro de `.env`. Para que sea diaria, programar ese comando en el Programador de tareas de Windows.
+Genera un archivo en `backups/` (se conservan las últimas 30). Si `pg_dump` no está en el PATH, indicar su ruta en `PG_DUMP` dentro de `.env`.
+
+**En producción la copia es automática:** el workflow `.github/workflows/backup-diario.yml` corre todos los días a las 04:00 de Córdoba. Hace la copia de la base de Neon, la cifra con AES-256 (el repositorio es público y la base tiene datos personales) y la guarda 30 días en *Actions*. Hay que cargar dos secretos en GitHub (*Settings → Secrets and variables → Actions*): `DATABASE_URL` y `BACKUP_PASSPHRASE`. Las instrucciones para restaurar una copia están en el encabezado del archivo.
+
+## Cobro de la seña con Mercado Pago
+
+Desde la ficha de la reserva, *Link de Mercado Pago* genera un link de pago por la seña (si la reserva está Preseñada) o por el saldo. El link se puede copiar o mandar por WhatsApp, y también va incluido en el correo de recordatorio. Cuando el cliente paga, Mercado Pago avisa al sistema (`POST /api/mercadopago/webhook`) y el pago se registra solo, con el número de operación. Si la seña queda cubierta, la reserva pasa a Confirmada. Si el aviso no llega, *Verificar pagos de Mercado Pago* consulta y registra los pagos aprobados que falten. Un mismo pago nunca se registra dos veces.
+
+Para activarlo, en Vercel:
+1. `MP_ACCESS_TOKEN`: el *Access Token* de producción de la cuenta de Mercado Pago del salón (*Tus integraciones → Credenciales*). Para probar sin cobrar de verdad, usar el de prueba.
+2. En Mercado Pago, en *Webhooks*, configurar la URL `https://diverty-park.vercel.app/api/mercadopago/webhook` con el evento *Pagos*, y copiar la clave secreta en `MP_WEBHOOK_SECRET`.
+3. *Redeploy*.
 
 ## Despliegue en Vercel + Neon
 
@@ -159,7 +170,6 @@ La app de Express corre en Vercel como una función (`api/index.mjs`) y el sitio
 
 El cron diario (`/api/cron/expirar`) libera las reservas preseñadas vencidas. Además, la expiración se revisa en cada consulta a la agenda.
 
-## Pendiente para próximas etapas
+## Fuera del alcance de esta etapa
 
-- Integración con la API de Mercado Pago (CU-A4). Hoy los pagos por Mercado Pago se registran a mano con su número de operación.
 - Facturación electrónica, stock de depósito y portal de autogestión del cliente quedan fuera del alcance (sección 8.4 del informe).

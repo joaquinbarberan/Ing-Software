@@ -5,6 +5,46 @@ Las entradas más nuevas van arriba.
 
 ---
 
+## 12/11/2026 · Cobro con Mercado Pago y backup diario automático
+
+**Módulos del informe:** M4 Caja y Cobros (CU-A4 con Mercado Pago como sistema externo, CU-13)
+**Requerimientos relacionados:** RF06 · RNF06, RNF07, RNF08
+
+### Qué se agregó
+
+- **Link de pago de Mercado Pago (Checkout Pro):** desde la ficha de la reserva, por la seña o por el saldo. El de la seña vence a las 72 horas, igual que la reserva preseñada (RN03). Si Mercado Pago está configurado, el correo de recordatorio incluye el link. Archivo nuevo: `utilidades/mercadopago.mjs`.
+- **Registro automático del pago:** `POST /api/mercadopago/webhook`. No se confía en el contenido del aviso: el pago se vuelve a consultar a Mercado Pago con el token del salón. Se valida la firma `x-signature` si está `MP_WEBHOOK_SECRET`. El número de operación se guarda en `pagos.mp_pago_id`, con índice único, así un aviso repetido no duplica el pago. Si cubre la seña, la reserva pasa a Confirmada (RN02).
+- **Verificar pagos:** botón en la ficha para registrar los pagos aprobados cuyo aviso no llegó.
+- **Backup diario:** workflow de GitHub Actions que guarda una copia cifrada de la base de Neon (`.github/workflows/backup-diario.yml`).
+
+### Cómo probarlo
+
+Con credenciales de prueba de Mercado Pago, generar el link de una reserva preseñada, pagar con una tarjeta de prueba y ver que el pago aparece solo en la reserva.
+
+---
+
+## 02/11/2026 · Límite de personas, nombres, comprobante PDF y correo al cliente
+
+**Módulos del informe:** M1 Agenda y Reservas, M2 Clientes, M4 Caja y Cobros
+**Requerimientos relacionados:** RF01, RF02, RF04, RF06 · RNF06, RNF08
+
+### Qué se agregó
+
+- **Límite de personas:** en la web, niños y adultos se ajustan solos al máximo que entra en alguna sala y el máximo se muestra en pantalla. El botón para elegir el día ya no se traba. En "Nueva reserva", las personas no pueden superar la capacidad de la sala elegida.
+- **Calendario por niños y adultos:** `/disponibilidad/mes` y `/disponibilidad/dia` reciben `ninos` y `adultos`. Antes filtraban sólo por el total y podían marcar libre un día en el que esos invitados no entraban en ninguna sala disponible.
+- **Nombres sin símbolos:** `REGEX_NOMBRE` en `utilidades/errores.mjs` valida clientes, solicitudes web, usuarios y coordinadores (letras con acentos, espacios, apóstrofo y guion). Los formularios quitan números y símbolos mientras se escribe.
+- **Comprobante en PDF:** se adjunta al registrar el pago o después, desde la tabla de pagos. Hasta 4 MB. Se verifica el contenido real del archivo. Se guarda en la tabla `pagos_comprobantes`, no en el almacenamiento público de fotos, porque tiene datos personales: sólo se ve con sesión y perfil de caja.
+- **Correo de recordatorio:** se envía al cliente al registrar la reserva y al convertir una solicitud web (`utilidades/correo.mjs`, con nodemailer). Si falla o no hay correo cargado, la reserva se guarda igual. Queda constancia en el historial.
+
+### Cómo probarlo
+
+1. En `reservas.html`, escribir 999 niños: baja al máximo y se puede seguir al calendario.
+2. En "Nueva reserva", escribir `Mar1a$` en el nombre: se quitan el número y el símbolo.
+3. Registrar una seña adjuntando un PDF: en la tabla de pagos aparece "Ver PDF".
+4. Configurar las variables `SMTP_*` (ver `.env.example`) y crear una reserva para un cliente con correo.
+
+---
+
 ## 29/10/2026 · Mejora del circuito de reservas (página pública + sistema interno)
 
 **Autor:** Lucas Bossi (con asistencia de IA: Claude)
