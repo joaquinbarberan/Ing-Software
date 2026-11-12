@@ -1,3 +1,4 @@
+import { recordarPorCorreo } from './agenda.controller.mjs';
 
 import solicitudModelo from '../modelos/solicitudes.model.mjs';
 import reservaModelo from '../modelos/reservas.model.mjs';
@@ -11,6 +12,7 @@ import {
   manejar,
   entero,
   hoy,
+  REGEX_NOMBRE,
   REGEX_FECHA,
   REGEX_HORA
 } from '../utilidades/errores.mjs';
@@ -25,7 +27,6 @@ import {
 } from '../utilidades/calculos.mjs';
 
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const REGEX_NOMBRE = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ' -]{2,100}$/;
 
 const MAXIMO_PENDIENTES_POR_DNI = 3;
 const VENTANA_MS = 10 * 60 * 1000;
@@ -281,7 +282,7 @@ const solicitudControlador = {
     };
 
     if (!REGEX_NOMBRE.test(datos.nombre)) {
-      throw new ErrorNegocio(400, 'Ingresá tu nombre correctamente.', {
+      throw new ErrorNegocio(400, 'El nombre sólo puede tener letras, sin números ni símbolos.', {
         campo: 'nombre'
       });
     }
@@ -720,9 +721,15 @@ const solicitudControlador = {
       return id;
     });
 
+    const correo = await recordarPorCorreo(
+      await reservaModelo.obtenerPorId(reservaId),
+      usuarioId
+    );
+
     respuesta.status(201).json({
       mensaje: 'Solicitud convertida en reserva correctamente.',
-      reserva_id: reservaId
+      reserva_id: reservaId,
+      correo
     });
   }),
 

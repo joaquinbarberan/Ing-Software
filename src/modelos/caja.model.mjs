@@ -6,10 +6,12 @@ const cajaModelo = {
   // --- PAGOS ---
   async listarPagos(reservaId, bd = conexion) {
     const resultado = await bd.query(`
-      SELECT p.*, u.nombre_usuario AS registrado_por_usuario, ua.nombre_usuario AS anulado_por_usuario
+      SELECT p.*, u.nombre_usuario AS registrado_por_usuario, ua.nombre_usuario AS anulado_por_usuario,
+             pc.nombre_archivo AS pdf_nombre
       FROM pagos p
       LEFT JOIN usuarios u ON u.id = p.registrado_por
       LEFT JOIN usuarios ua ON ua.id = p.anulado_por
+      LEFT JOIN pagos_comprobantes pc ON pc.pago_id = p.id
       WHERE p.reserva_id = $1
       ORDER BY p.registrado_en
     `, [reservaId]);
@@ -18,6 +20,21 @@ const cajaModelo = {
 
   async obtenerPago(id, bd = conexion) {
     const resultado = await bd.query('SELECT * FROM pagos WHERE id = $1', [id]);
+    return resultado.rows[0];
+  },
+
+  // --- COMPROBANTE EN PDF ---
+  async guardarPdf(pagoId, nombreArchivo, datos, usuarioId, bd = conexion) {
+    await bd.query(`
+      INSERT INTO pagos_comprobantes (pago_id, nombre_archivo, datos, subido_por) VALUES ($1, $2, $3, $4)
+      ON CONFLICT (pago_id) DO UPDATE
+        SET nombre_archivo = EXCLUDED.nombre_archivo, datos = EXCLUDED.datos,
+            subido_por = EXCLUDED.subido_por, subido_en = NOW()
+    `, [pagoId, nombreArchivo, datos, usuarioId]);
+  },
+
+  async obtenerPdf(pagoId, bd = conexion) {
+    const resultado = await bd.query('SELECT nombre_archivo, datos FROM pagos_comprobantes WHERE pago_id = $1', [pagoId]);
     return resultado.rows[0];
   },
 
@@ -36,6 +53,17 @@ const cajaModelo = {
     return resultado.rows[0];
   },
 
+  // Pago aprobado en Mercado Pago. Si ese número de operación ya estaba registrado, no hace nada.
+  async crearPagoMercadoPago(datos, bd = conexion) {
+    const resultado = await bd.query(`
+      INSERT INTO pagos (reserva_id, tipo, monto, medio, comprobante, fecha_pago, registrado_por, mp_pago_id)
+      VALUES ($1, $2, $3, 'mercado_pago', $4, COALESCE($5::date, CURRENT_DATE), NULL, $6)
+      ON CONFLICT (mp_pago_id) WHERE mp_pago_id IS NOT NULL DO NOTHING
+      RETURNING *
+    `, [datos.reserva_id, datos.tipo, datos.monto, datos.comprobante, datos.fecha_pago || null, datos.mp_pago_id]);
+    return resultado.rows[0];
+  },
+
   async anularPago(id, motivo, usuarioId, bd = conexion) {
     await bd.query(`
       UPDATE pagos SET anulado = TRUE, motivo_anulacion = $1, anulado_por = $2, anulado_en = NOW() WHERE id = $3
@@ -47,8 +75,9 @@ const cajaModelo = {
     const resultado = await bd.query(`
       SELECT p.*, r.fecha AS fecha_evento, s.nombre AS sala_nombre,
              c.nombre || ' ' || c.apellido AS cliente,
-             u.nombre_usuario AS registrado_por_usuario
+             u.nombre_usuario AS registrado_por_usuario, pc.nombre_archivo AS pdf_nombre
       FROM pagos p
+      LEFT JOIN pagos_comprobantes pc ON pc.pago_id = p.id
       JOIN reservas r ON r.id = p.reserva_id
       JOIN salas s ON s.id = r.sala_id
       JOIN clientes c ON c.id = r.cliente_id

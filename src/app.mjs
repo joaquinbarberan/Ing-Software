@@ -15,6 +15,7 @@ import rutasCaja from './routers/caja.routers.mjs';
 import rutasCatalogos from './routers/catalogos.routers.mjs';
 import rutasSolicitudes from './routers/solicitudes.routers.mjs';
 import solicitudControlador from './controladores/solicitudes.controller.mjs';
+import cajaControlador from './controladores/caja.controller.mjs';
 import salaControlador from './controladores/salas.controller.mjs';
 import agendaControlador, { expirarPresenadas } from './controladores/agenda.controller.mjs';
 import verificarToken from './middleware/autenticacion.mjs';
@@ -95,6 +96,10 @@ app.get('/api/cron/expirar', async (peticion, respuesta) => {
 });
 
 
+// Aviso de pagos de Mercado Pago (público: Mercado Pago no tiene sesión en el sistema)
+app.post('/api/mercadopago/webhook', cajaControlador.webhookMercadoPago);
+
+
 // --- 5. RUTAS DEL SISTEMA DE GESTIÓN (protegidas con JWT) ---
 // verificarToken actúa como "portero": si no hay token válido, rechaza la petición.
 // Los permisos por perfil se controlan dentro de cada router.
@@ -132,7 +137,7 @@ app.use((error, peticion, respuesta, siguiente) => {
     return respuesta.status(400).json({ error: 'El cuerpo de la petición no es un JSON válido.' });
   }
   if (error.code === 'LIMIT_FILE_SIZE') {
-    return respuesta.status(400).json({ error: 'La imagen supera los 4 MB. Elegí una más liviana.' });
+    return respuesta.status(400).json({ error: 'El archivo supera los 4 MB. Elegí uno más liviano.' });
   }
   console.error('Error no controlado:', error);
   respuesta.status(500).json({ error: 'Hubo un problema en el servidor.' });

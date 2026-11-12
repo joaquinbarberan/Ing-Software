@@ -389,6 +389,19 @@ const sentencias = [
     CONSTRAINT pagos_monto_valido CHECK (monto <> 0)
   )`,
   `CREATE INDEX IF NOT EXISTS idx_pagos_reserva ON pagos (reserva_id)`,
+  // Número de operación de Mercado Pago: único, así un mismo aviso no registra el pago dos veces
+  `ALTER TABLE pagos ADD COLUMN IF NOT EXISTS mp_pago_id BIGINT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_pagos_mp ON pagos (mp_pago_id) WHERE mp_pago_id IS NOT NULL`,
+
+  // Comprobante en PDF de cada pago. Se guarda en la base y no en el almacenamiento público de fotos
+  // porque tiene datos personales: sólo se descarga con sesión iniciada (RNF08).
+  `CREATE TABLE IF NOT EXISTS pagos_comprobantes (
+    pago_id INT PRIMARY KEY REFERENCES pagos(id),
+    nombre_archivo VARCHAR(200) NOT NULL,
+    datos BYTEA NOT NULL,
+    subido_por INT REFERENCES usuarios(id),
+    subido_en TIMESTAMP NOT NULL DEFAULT NOW()
+  )`,
 
   // Foto de la liquidación final al momento de emitirla (RF09)
   `CREATE TABLE IF NOT EXISTS liquidaciones (

@@ -5,6 +5,8 @@ import catalogoModelo from '../modelos/catalogos.model.mjs';
 import salaModelo from '../modelos/salas.model.mjs';
 import eventoModelo from '../modelos/eventos.model.mjs';
 import cajaModelo from '../modelos/caja.model.mjs';
+import { enviarRecordatorio } from '../utilidades/correo.mjs';
+import { mercadoPagoConfigurado, crearLinkDePago } from '../utilidades/mercadopago.mjs';
 import { ESTADOS_TERMINALES } from '../bd/esquema.mjs';
 import { tienePermiso } from '../middleware/permisos.mjs';
 import { ErrorNegocio, manejar, entero, importe, hoy, REGEX_FECHA, REGEX_HORA } from '../utilidades/errores.mjs';
@@ -154,9 +156,15 @@ function capacidadDe(sala) {
 }
 
 // Salas donde entran las personas indicadas (capacidad 0 = sin límite cargado)
-function salasParaPersonas(salas, personas) {
-  if (!(personas > 0)) return salas;
-  return salas.filter(sala => capacidadDe(sala) === 0 || capacidadDe(sala) >= personas);
+function salasParaPersonas(salas, personas, ninos, adultos) {
+  return salas.filter((sala) => {
+    if (personas > 0 && capacidadDe(sala) > 0 && capacidadDe(sala) < personas) return false;
+    // Si se indican niños y adultos por separado, la sala tiene que admitir cada grupo:
+    // así el calendario no ofrece un día libre sólo en una sala donde esos invitados no entran.
+    if (ninos > 0 && sala.capacidad_ninos > 0 && sala.capacidad_ninos < ninos) return false;
+    if (adultos > 0 && sala.capacidad_adultos > 0 && sala.capacidad_adultos < adultos) return false;
+    return true;
+  });
 }
 
 // Devuelve, para cada fecha del período, los horarios libres de cada sala.
@@ -197,6 +205,32 @@ function salaPublica(sala) {
     capacidad_ninos: sala.capacidad_ninos, capacidad_adultos: sala.capacidad_adultos,
     imagen: sala.imagen, alt_imagen: sala.alt_imagen
   };
+}
+
+// Manda el recordatorio al cliente después de guardar la reserva y deja constancia en el historial.
+// Va fuera de la transacción: si el correo falla, la reserva queda registrada igual.
+export async function recordarPorCorreo(reserva, usuarioId) {
+  // Si Mercado Pago está configurado, el correo incluye el link para pagar la seña.
+  // Si falla, el correo sale igual sin el link.
+  let linkPago = null;
+  if (reserva.cliente_email && mercadoPagoConfigurado() && reserva.estado === 'presenada') {
+    try {
+      linkPago = (await crearLinkDePago({
+        reservaId: reserva.id, monto: Number(reserva.sena_requerida),
+        vence: new Date(new Date(reserva.fecha_alta).getTime() + 72 * 3600 * 1000),
+        concepto: `Seña reserva N.º ${reserva.id} · Diverty Park · ${reserva.fecha}`
+      })).url;
+    } catch (error) {
+      console.error('No se pudo generar el link de Mercado Pago para el correo:', error.message);
+    }
+  }
+  const resultado = await enviarRecordatorio(reserva, linkPago);
+  if (resultado.destinatario) {
+    await reservaModelo.registrarHistorial(reserva.id, usuarioId, 'correo', resultado.enviado
+      ? `Recordatorio enviado a ${resultado.destinatario}.`
+      : `No se pudo enviar el recordatorio a ${resultado.destinatario}. ${resultado.motivo}`);
+  }
+  return resultado;
 }
 
 const agendaControlador = {
@@ -314,7 +348,7 @@ const agendaControlador = {
     if (`${mes}-01` > limite) throw new ErrorNegocio(400, 'Todavía no se toman reservas para esa fecha.');
 
     const { minutos } = await duracionPedida({ paqueteId, horas: peticion.query.duracion, soloPublicos: true });
-    const salas = salasParaPersonas(await salaModelo.obtenerTodas(), entero(peticion.query.personas));
+    const salas = salasParaPersonas(await salaModelo.obtenerTodas(), entero(peticion.query.personas), entero(peticion.query.ninos), entero(peticion.query.adultos));
     await expirarPresenadas();
 
     const desde = `${mes}-01`;
@@ -341,7 +375,7 @@ const agendaControlador = {
     if (fecha < hoy()) throw new ErrorNegocio(400, 'La fecha ya pasó.');
     const { minutos } = await duracionPedida({ paqueteId, horas: peticion.query.duracion, soloPublicos: true });
     const todas = await salaModelo.obtenerTodas();
-    const salas = salasParaPersonas(todas, entero(peticion.query.personas));
+    const salas = salasParaPersonas(todas, entero(peticion.query.personas), entero(peticion.query.ninos), entero(peticion.query.adultos));
     await expirarPresenadas();
     const porFecha = await horariosDelPeriodo(fecha, fecha, salas, minutos, { margenHoy: MARGEN_PUBLICO_MINUTOS, paso: PASO_PUBLICO_MINUTOS });
     respuesta.json({
@@ -437,7 +471,9 @@ const agendaControlador = {
       return id;
     });
 
-    respuesta.status(201).json(await detalleReserva(nuevoId));
+    const detalle = await detalleReserva(nuevoId);
+    detalle.correo = await recordarPorCorreo(detalle, usuario.id);
+    respuesta.status(201).json(detalle);
   }),
 
   // GET /api/v1/reservas/:id
