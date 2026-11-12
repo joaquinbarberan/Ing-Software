@@ -1,0 +1,68 @@
+# Copia de seguridad diaria de la base de datos de producción (RNF07).
+#
+# Corre todos los días a las 04:00 de Córdoba (07:00 UTC) y también se puede lanzar a mano
+# desde la pestaña Actions de GitHub ("Run workflow").
+#
+# La copia se CIFRA antes de guardarla: el repositorio es público y la base tiene datos personales
+# de clientes (Ley 25.326). Sin la clave nadie puede abrirla. Se conservan 30 días.
+#
+# Secretos que hay que cargar en GitHub (Settings > Secrets and variables > Actions):
+#   DATABASE_URL        la misma cadena de conexión de Neon que usa Vercel
+#   BACKUP_PASSPHRASE   una clave larga para cifrar las copias (guardarla en un lugar seguro)
+#
+# Para restaurar una copia: descargarla desde Actions, y luego
+#   gpg --decrypt diverty_park-AAAA-MM-DD.dump.gpg > copia.dump
+#   pg_restore --clean --no-owner -d "CADENA_DE_CONEXION" copia.dump
+
+name: Backup diario de la base
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar que estén los secretos
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "Faltan los secretos DATABASE_URL o BACKUP_PASSPHRASE. Ver el encabezado de este archivo."
+            exit 1
+          fi
+
+      - name: Instalar pg_dump 18 (la misma versión que Neon)
+        run: |
+          sudo apt-get install -y -q curl ca-certificates
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -q
+          sudo apt-get install -y -q postgresql-client-18
+
+      - name: Generar y cifrar la copia
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          fecha=$(TZ=America/Argentina/Cordoba date +%F)
+          /usr/lib/postgresql/18/bin/pg_dump "$DATABASE_URL" -Fc --no-owner -f copia.dump
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
+              --symmetric --cipher-algo AES256 -o "diverty_park-$fecha.dump.gpg" copia.dump
+          rm copia.dump
+          ls -lh "diverty_park-$fecha.dump.gpg"
+
+      - name: Guardar la copia cifrada
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_id }}
+          path: diverty_park-*.dump.gpg
+          retention-days: 30
+          if-no-files-found: error
