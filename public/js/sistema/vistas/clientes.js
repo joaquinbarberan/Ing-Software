@@ -11,8 +11,8 @@ function formularioCliente(cliente, alGuardar) {
     contenido: `
       <form class="formulario" novalidate>
         <div class="columnas-2 compacta">
-          <label class="campo"><span>Nombre</span><input name="nombre" value="${esc(cliente?.nombre)}" required></label>
-          <label class="campo"><span>Apellido</span><input name="apellido" value="${esc(cliente?.apellido)}" required></label>
+          <label class="campo"><span>Nombre</span><input name="nombre" data-solo-nombre value="${esc(cliente?.nombre)}" required></label>
+          <label class="campo"><span>Apellido</span><input name="apellido" data-solo-nombre value="${esc(cliente?.apellido)}" required></label>
           <label class="campo"><span>DNI</span><input name="dni" value="${esc(cliente?.dni)}" inputmode="numeric" required></label>
           <label class="campo"><span>Teléfono</span><input name="telefono" type="tel" value="${esc(cliente?.telefono)}" required></label>
         </div>

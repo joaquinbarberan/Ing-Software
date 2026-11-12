@@ -385,7 +385,7 @@ footer h3 {
     margin: 6px 0;
     padding: 12px 20px;
     border-radius: 8px;
-    background: #1f8f4e;
+    background: #187a42;
     color: #fff;
     font-weight: bold;
     text-decoration: none;
@@ -402,7 +402,7 @@ footer h3 {
 .rv-caja {
     --rv-rojo: #d92332;
     --rv-rojo-suave: #fdecec;
-    --rv-verde: #1f8f4e;
+    --rv-verde: #187a42;
     --rv-verde-suave: #e3f4e9;
     --rv-naranja: #c87a12;
     --rv-naranja-suave: #fdf1dd;

@@ -140,6 +140,18 @@ function totalInvitados() {
   return eleccion.ninos + eleccion.adultos;
 }
 
+// Máximo de niños o adultos que entra en alguna sala, teniendo en cuenta el otro grupo.
+function limiteDe(campo) {
+  const otro = campo === 'ninos' ? 'adultos' : 'ninos';
+  const capacidad = (sala, grupo) => Number(sala[`capacidad_${grupo}`]) || 0;
+
+  const posibles = salasCatalogo
+    .filter(sala => eleccion[otro] <= capacidad(sala, otro))
+    .map(sala => capacidad(sala, campo));
+
+  return Math.max(0, ...posibles);
+}
+
 function validarInvitados() {
   const total = totalInvitados();
 
@@ -166,7 +178,7 @@ function validarInvitados() {
 
   return {
     valido: true,
-    mensaje: `${total} invitados en total · ${eleccion.ninos} niños y ${eleccion.adultos} adultos.`
+    mensaje: `${total} invitados en total · Máximo por sala: ${limiteDe('ninos')} niños y ${limiteDe('adultos')} adultos.`
   };
 }
 
@@ -183,6 +195,10 @@ function actualizarInvitadosUI() {
     !validacion.valido
   );
 
+  $('#rv-ninos').max = limiteDe('ninos');
+  $('#rv-adultos').max = limiteDe('adultos');
+
+  // Como la cantidad nunca pasa del límite, siempre se puede avanzar a elegir el día
   $('#rv-ir-dia').disabled = !validacion.valido;
 }
 
@@ -199,12 +215,18 @@ function invalidarFechaYSala() {
 }
 
 function cambiarInvitados(campo, valor) {
-  const nuevo = Math.max(
-    0,
-    Math.min(200, Math.round(Number(valor) || 0))
-  );
+  const otro = campo === 'ninos' ? 'adultos' : 'ninos';
+  const limite = limiteDe(campo);
+  const pedido = Math.round(Number(valor) || 0);
 
-  if (eleccion[campo] === nuevo) return;
+  // Se ajusta solo al límite, en lugar de trabar el avance: nunca puede quedar en cero invitados
+  const minimo = eleccion[otro] > 0 ? 0 : 1;
+  const nuevo = Math.max(minimo, limite > 0 ? Math.min(limite, pedido) : pedido);
+
+  if (eleccion[campo] === nuevo) {
+    actualizarInvitadosUI();
+    return;
+  }
 
   eleccion[campo] = nuevo;
 
@@ -434,7 +456,7 @@ async function dibujarCalendario() {
 
   try {
     datos = await pedir(
-      `/disponibilidad/mes?mes=${encodeURIComponent(mes)}&duracion=${DURACION_HORAS}&personas=${total}`
+      `/disponibilidad/mes?mes=${encodeURIComponent(mes)}&duracion=${DURACION_HORAS}&personas=${total}&ninos=${eleccion.ninos}&adultos=${eleccion.adultos}`
     );
   } catch (error) {
     if (numeroConsulta !== consultaCalendario) return;
@@ -545,7 +567,7 @@ async function dibujarSalas() {
 
   try {
     datos = await pedir(
-      `/disponibilidad/dia?fecha=${encodeURIComponent(eleccion.fecha)}&duracion=${DURACION_HORAS}&personas=${totalInvitados()}`
+      `/disponibilidad/dia?fecha=${encodeURIComponent(eleccion.fecha)}&duracion=${DURACION_HORAS}&personas=${totalInvitados()}&ninos=${eleccion.ninos}&adultos=${eleccion.adultos}`
     );
   } catch (error) {
     contenedor.innerHTML = `
@@ -1123,6 +1145,9 @@ async function iniciar() {
 
     eleccion.mes = mesDe(hoy());
 
+    // Si los valores iniciales superan lo que entra en las salas, se ajustan al límite
+    eleccion.ninos = Math.min(eleccion.ninos, limiteDe('ninos') || eleccion.ninos);
+
     actualizarInvitadosUI();
 
   } catch (error) {
@@ -1170,6 +1195,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   $('#rv-adultos').addEventListener('change', evento => {
     cambiarInvitados('adultos', evento.target.value);
+  });
+
+
+  // Nombre y apellido: sin números ni símbolos.
+  document.querySelectorAll('#rv-formulario [name=nombre], #rv-formulario [name=apellido]').forEach(campo => {
+    campo.addEventListener('input', () => {
+      const limpio = campo.value.replace(/[^\p{L}' -]/gu, '');
+      if (limpio !== campo.value) campo.value = limpio;
+    });
   });
 
 

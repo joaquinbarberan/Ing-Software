@@ -96,6 +96,7 @@ async function pestanaCatalogo(contenedor, clave) {
         </form>`
     });
     const formulario = cuerpo.querySelector('form');
+    if (clave === 'coordinadores') formulario.nombre.setAttribute('data-solo-nombre', '');
     cuerpo.querySelector('[data-cerrar]').addEventListener('click', cerrar);
     formulario.addEventListener('submit', async (evento) => {
       evento.preventDefault();
@@ -151,7 +152,7 @@ async function pestanaUsuarios(contenedor) {
       contenido: `
         <form class="formulario" novalidate>
           ${usuario ? '' : '<label class="campo"><span>Nombre de usuario</span><input name="nombre_usuario" autocomplete="off" required></label>'}
-          <label class="campo"><span>Nombre de la persona</span><input name="nombre" value="${esc(usuario?.nombre || '')}" required></label>
+          <label class="campo"><span>Nombre de la persona</span><input name="nombre" data-solo-nombre value="${esc(usuario?.nombre || '')}" required></label>
           <label class="campo"><span>Perfil</span>
             <select name="perfil">${Object.entries(PERFILES).map(([valor, texto]) => `<option value="${valor}" ${usuario?.perfil === valor ? 'selected' : ''}>${texto}</option>`).join('')}</select>
           </label>

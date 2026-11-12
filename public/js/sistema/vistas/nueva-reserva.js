@@ -44,8 +44,8 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
           </div>
           <input type="hidden" name="cliente_id">
           <div class="columnas-2 compacta">
-            <label class="campo"><span>Nombre</span><input name="nombre" autocomplete="off"></label>
-            <label class="campo"><span>Apellido</span><input name="apellido" autocomplete="off"></label>
+            <label class="campo"><span>Nombre</span><input name="nombre" data-solo-nombre autocomplete="off"></label>
+            <label class="campo"><span>Apellido</span><input name="apellido" data-solo-nombre autocomplete="off"></label>
             <label class="campo"><span>Teléfono</span><input name="telefono" type="tel" autocomplete="off"></label>
             <label class="campo"><span>Correo</span><input name="email" type="email" autocomplete="off"></label>
           </div>
@@ -67,7 +67,7 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
                 ${paquetesVisibles.map(p => `<option value="${p.id}">${esc(p.nombre)}${p.es_personalizado ? '' : ` — ${pesos(p.precio_base)} (${p.personas_incluidas} pers.)`}</option>`).join('')}
               </select>
             </label>
-            <label class="campo"><span>Personas</span><input type="number" name="personas_contratadas" min="1" required></label>
+            <label class="campo"><span>Personas</span><input type="number" name="personas_contratadas" min="1" required><small class="nota" id="limite-personas"></small></label>
           </div>
           ${htmlSelectorHorarios()}
           <p id="estado-franja" class="estado-franja"></p>
@@ -256,7 +256,18 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
     }
     calcular();
   });
-  formulario.personas_contratadas.addEventListener('input', calcular);
+  // Límite de personas: nunca se puede pasar de lo que admite la sala elegida
+  function aplicarLimitePersonas() {
+    const capacidad = Number(formulario.sala_id.selectedOptions[0]?.dataset.capacidad) || 0;
+    const campo = formulario.personas_contratadas;
+    const nota = contenedor.querySelector('#limite-personas');
+    if (capacidad > 0) campo.max = capacidad; else campo.removeAttribute('max');
+    nota.textContent = capacidad > 0 ? `Máximo ${capacidad} en esta sala.` : '';
+    if (capacidad > 0 && Number(campo.value) > capacidad) campo.value = capacidad;
+  }
+  formulario.sala_id.addEventListener('change', () => { aplicarLimitePersonas(); calcular(); });
+  aplicarLimitePersonas();
+  formulario.personas_contratadas.addEventListener('input', () => { aplicarLimitePersonas(); calcular(); });
   formulario.importe_manual.addEventListener('input', calcular);
 
   // --- Guardar (pasos 7 a 9) ---
@@ -324,6 +335,7 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
           <p>${esc(reserva.paquete_nombre)} · ${reserva.personas_contratadas} personas</p>
           <p>Importe estimado: <strong>${pesos(reserva.importe_estimado)}</strong> · Seña requerida: <strong>${pesos(reserva.sena_requerida)}</strong></p>
           <p>Estado: <span class="etiqueta estado-presenada">Preseñada</span>. La fecha queda tomada por 72 horas hasta registrar la seña.</p>
+          <p class="nota">${reserva.correo?.enviado ? `Se envió el recordatorio a ${esc(reserva.correo.destinatario)}.` : `No se envió recordatorio por correo: ${esc(reserva.correo?.motivo || '')}`}</p>
         </div>
         <div class="acciones">
           <button class="boton boton-secundario" data-imprimir>Imprimir</button>

@@ -112,7 +112,7 @@ if (convertir) {
       {}
     );
 
-    avisar(`Reserva N.º ${resultado.reserva_id} creada correctamente.`);
+    avisar(`Reserva N.º ${resultado.reserva_id} creada.${resultado.correo?.enviado ? ` Recordatorio enviado a ${resultado.correo.destinatario}.` : ''}`);
 
     await cargar();
 

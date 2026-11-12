@@ -84,7 +84,7 @@ export default async function vistaCaja(contenedor) {
             <td><a href="#/reservas/${f.reserva_id}">N.º ${f.reserva_id}</a> · ${esc(f.cliente)}<br><span class="nota">evento ${fechaCorta(f.fecha_evento)}</span></td>
             <td>${TIPOS_PAGO[f.tipo]}${f.anulado ? ' <span class="etiqueta estado-cancelada">Anulado</span>' : ''}</td>
             <td>${MEDIOS[f.medio]}</td>
-            <td>${esc(f.comprobante || '—')}</td>
+            <td>${esc(f.comprobante || '—')}${f.pdf_nombre ? ` <a href="/api/v1/pagos/${f.id}/comprobante-pdf" target="_blank" rel="noopener">Ver PDF</a>` : ''}</td>
             <td class="numero">${pesos(f.monto)}</td>
             <td>${esc(f.registrado_por_usuario || '')}<br><span class="nota">${fechaHora(f.registrado_en)}</span></td>
           </tr>`).join('')}

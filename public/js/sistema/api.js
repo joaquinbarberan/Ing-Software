@@ -42,6 +42,19 @@ async function pedir(metodo, ruta, cuerpo) {
   return datos;
 }
 
+// Sube un archivo (multipart/form-data). El navegador arma solo el encabezado Content-Type.
+async function subir(ruta, datos) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`/api/v1${ruta}`, { method: 'POST', credentials: 'include', body: datos });
+  } catch {
+    throw new ErrorConexion();
+  }
+  const cuerpo = await respuesta.json().catch(() => null);
+  if (!respuesta.ok) throw new ErrorApi(respuesta.status, cuerpo);
+  return cuerpo;
+}
+
 // Arma la query string ignorando los valores vacíos
 export function query(parametros) {
   const texto = new URLSearchParams(Object.entries(parametros).filter(([, valor]) => valor !== undefined && valor !== null && valor !== '')).toString();
@@ -52,5 +65,6 @@ export const api = {
   get: (ruta) => pedir('GET', ruta),
   post: (ruta, cuerpo = {}) => pedir('POST', ruta, cuerpo),
   put: (ruta, cuerpo = {}) => pedir('PUT', ruta, cuerpo),
-  delete: (ruta) => pedir('DELETE', ruta)
+  delete: (ruta) => pedir('DELETE', ruta),
+  subir
 };

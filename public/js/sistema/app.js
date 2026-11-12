@@ -184,6 +184,13 @@ async function iniciar() {
 
   configurarBarraSuperior();
   dibujarMenu();
+  // Los campos de nombre de personas no aceptan números ni símbolos
+  document.addEventListener('input', (evento) => {
+    if (!evento.target.matches?.('[data-solo-nombre]')) return;
+    const limpio = evento.target.value.replace(/[^\p{L}' -]/gu, '');
+    if (limpio !== evento.target.value) evento.target.value = limpio;
+  });
+
   window.addEventListener('hashchange', mostrarRuta);
   mostrarRuta();
 

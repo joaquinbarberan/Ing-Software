@@ -14,7 +14,7 @@ const ACCIONES_HISTORIAL = {
   alta: 'Alta', modificacion: 'Modificación', cancelacion: 'Cancelación', expiracion: 'Expiración automática',
   confirmacion: 'Confirmación', pago: 'Pago', anulacion_pago: 'Anulación de pago', habilitacion: 'Evento habilitado',
   asistentes: 'Asistentes', consumo: 'Consumo', anulacion_consumo: 'Anulación de consumo', coordinador: 'Coordinadores',
-  insumos: 'Insumos', liquidacion: 'Liquidación'
+  insumos: 'Insumos', liquidacion: 'Liquidación', correo: 'Correo al cliente', comprobante_pdf: 'Comprobante PDF', link_mercadopago: 'Link de Mercado Pago', aviso: 'Aviso'
 };
 
 export default async function vistaReserva(contenedor, { partes, parametros }) {
@@ -22,6 +22,7 @@ export default async function vistaReserva(contenedor, { partes, parametros }) {
   ponerMigas(['Agenda', 'agenda'], `Reserva N.º ${id}`);
 
   let reserva;
+  let mercadoPagoActivo = false;
   let salas = [];
   let coordinadores = [];
 
@@ -29,6 +30,7 @@ export default async function vistaReserva(contenedor, { partes, parametros }) {
     try {
       [reserva, salas] = await Promise.all([api.get(`/reservas/${id}`), api.get('/salas')]);
       if (puede('administracion')) coordinadores = await api.get('/catalogos/coordinadores?activos=true');
+      mercadoPagoActivo = (await api.get('/mercadopago/estado').catch(() => ({}))).configurado === true;
     } catch (error) {
       return panelError(contenedor, error, cargar);
     }
@@ -115,13 +117,16 @@ export default async function vistaReserva(contenedor, { partes, parametros }) {
         <h2>Pagos</h2>
         ${r.pagos.length === 0 ? '<p class="nota">Todavía no se registraron pagos.</p>' : `
         <div class="tabla-desplazable"><table class="tabla">
-          <thead><tr><th>Fecha</th><th>Tipo</th><th>Medio</th><th>Comprobante</th><th class="numero">Monto</th><th>Registró</th><th></th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Tipo</th><th>Medio</th><th>Comprobante</th><th>PDF</th><th class="numero">Monto</th><th>Registró</th><th></th></tr></thead>
           <tbody>${r.pagos.map(p => `
             <tr class="${p.anulado ? 'fila-anulada' : ''}">
               <td>${fechaCorta(p.fecha_pago)}</td>
               <td>${TIPOS_PAGO[p.tipo]}</td>
               <td>${MEDIOS[p.medio]}</td>
               <td>${esc(p.comprobante || '—')}</td>
+              <td>${p.pdf_nombre
+                ? `<a href="/api/v1/pagos/${p.id}/comprobante-pdf" target="_blank" rel="noopener" title="${esc(p.pdf_nombre)}">Ver PDF</a>`
+                : (!p.anulado && puede('ventas', 'encargado', 'administracion') ? `<button class="boton-texto" data-adjuntar-pdf="${p.id}">Adjuntar</button>` : '—')}</td>
               <td class="numero">${pesos(p.monto)}</td>
               <td>${esc(p.registrado_por_usuario || '')} <span class="nota">${fechaHora(p.registrado_en)}</span></td>
               <td>${p.anulado
@@ -197,6 +202,30 @@ export default async function vistaReserva(contenedor, { partes, parametros }) {
     }
   }
 
+  async function linkMercadoPago(boton) {
+    const r = reserva;
+    try {
+      const link = await conBoton(boton, () => api.post(`/reservas/${r.id}/mercadopago`));
+      const mensaje = `Hola ${r.cliente_nombre}, te paso el link para pagar la ${link.concepto} de tu reserva en Diverty Park (${pesos(link.monto)}): ${link.url}`;
+      const { cuerpo } = abrirModal({
+        titulo: `Link de pago de la ${link.concepto}`,
+        contenido: `
+          <p>Monto: <strong>${pesos(link.monto)}</strong>. Cuando el cliente paga, el pago se registra solo en esta reserva.</p>
+          <label class="campo"><span>Link</span><input readonly value="${esc(link.url)}" data-link></label>
+          <div class="acciones">
+            <button class="boton boton-secundario" data-copiar>Copiar link</button>
+            ${r.cliente_telefono ? `<a class="boton boton-primario" target="_blank" rel="noopener" href="${enlaceWhatsapp(r.cliente_telefono, mensaje)}">Enviar por WhatsApp</a>` : ''}
+          </div>`
+      });
+      cuerpo.querySelector('[data-copiar]').addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(link.url); avisar('Link copiado.'); }
+        catch { cuerpo.querySelector('[data-link]').select(); }
+      });
+    } catch (error) {
+      mostrarError(error);
+    }
+  }
+
   function abrirPago(tipoInicial) {
     formularioPago(reserva, tipoInicial, (resultado) => actualizar(resultado.reserva));
   }
@@ -254,8 +283,34 @@ export default async function vistaReserva(contenedor, { partes, parametros }) {
     if (r.estado === 'en_curso' && puede('encargado', 'administracion')) {
       accionesCaja.insertAdjacentHTML('beforeend', '<button class="boton boton-primario" data-liquidar>Emitir liquidación final</button>');
     }
+    // Cobro por Mercado Pago: link para mandarle al cliente y verificación de pagos
+    if (mercadoPagoActivo && puede('ventas', 'encargado', 'administracion')
+        && ['presenada', 'confirmada', 'en_curso'].includes(r.estado) && r.cuenta.saldo > 0) {
+      accionesCaja.insertAdjacentHTML('beforeend', `
+        <button class="boton boton-secundario" data-mp-link>Link de Mercado Pago</button>
+        <button class="boton-texto" data-mp-verificar>Verificar pagos de Mercado Pago</button>`);
+    }
+    accionesCaja.querySelector('[data-mp-link]')?.addEventListener('click', (evento) => linkMercadoPago(evento.target));
+    accionesCaja.querySelector('[data-mp-verificar]')?.addEventListener('click', (evento) =>
+      ejecutar(evento.target, () => api.post(`/reservas/${r.id}/mercadopago/verificar`)));
     accionesCaja.querySelectorAll('[data-pago]').forEach(b => b.addEventListener('click', () => abrirPago(b.dataset.pago)));
     accionesCaja.querySelector('[data-liquidar]')?.addEventListener('click', () => formularioLiquidacion(r, (nueva) => actualizar(nueva)));
+
+    // Adjuntar el comprobante en PDF a un pago ya registrado
+    contenedor.querySelectorAll('[data-adjuntar-pdf]').forEach(boton => boton.addEventListener('click', () => {
+      const selector = document.createElement('input');
+      selector.type = 'file';
+      selector.accept = 'application/pdf,.pdf';
+      selector.addEventListener('change', () => {
+        const archivo = selector.files[0];
+        if (!archivo) return;
+        if (archivo.size > 4 * 1024 * 1024) return avisar('El PDF supera los 4 MB. Elegí uno más liviano.', 'error');
+        const envio = new FormData();
+        envio.append('archivo', archivo);
+        ejecutar(boton, () => api.subir(`/pagos/${boton.dataset.adjuntarPdf}/comprobante-pdf`, envio), 'Comprobante adjuntado.');
+      });
+      selector.click();
+    }));
 
     contenedor.querySelectorAll('[data-anular-pago]').forEach(boton => boton.addEventListener('click', async () => {
       const motivo = await confirmar({

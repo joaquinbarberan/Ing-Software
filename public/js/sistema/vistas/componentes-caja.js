@@ -48,6 +48,7 @@ export function formularioPago(reserva, tipoInicial, alTerminar) {
         </div>
         <label class="campo"><span id="etiqueta-comprobante">${tipo === 'ajuste' ? 'Motivo del ajuste' : 'Comprobante / N.º de operación'}</span><input name="comprobante" maxlength="200"></label>
         <p class="nota" id="nota-medio"></p>
+        <label class="campo"><span>Comprobante en PDF <em>(opcional, hasta 4 MB)</em></span><input type="file" name="archivo_pdf" accept="application/pdf,.pdf"></label>
         <div class="caja-mensaje caja-error" id="error-pago" hidden></div>
         <div class="acciones">
           <button type="button" class="boton boton-secundario" data-cerrar>Cancelar</button>
@@ -78,8 +79,21 @@ export function formularioPago(reserva, tipoInicial, alTerminar) {
     const error = cuerpo.querySelector('#error-pago');
     error.hidden = true;
     try {
-      const resultado = await conBoton(formulario.querySelector('[type=submit]'), () =>
-        api.post(`/reservas/${reserva.id}/pagos`, Object.fromEntries(new FormData(formulario))));
+      const archivo = formulario.archivo_pdf.files[0];
+      if (archivo && archivo.size > 4 * 1024 * 1024) throw new Error('El PDF supera los 4 MB. Elegí uno más liviano.');
+      const datos = Object.fromEntries(new FormData(formulario));
+      delete datos.archivo_pdf;
+      const resultado = await conBoton(formulario.querySelector('[type=submit]'), () => api.post(`/reservas/${reserva.id}/pagos`, datos));
+      // El pago ya quedó registrado. Si falla sólo el PDF, se avisa: se puede adjuntar después desde la tabla de pagos.
+      if (archivo) {
+        try {
+          const envio = new FormData();
+          envio.append('archivo', archivo);
+          resultado.reserva = await api.subir(`/pagos/${resultado.pago_id}/comprobante-pdf`, envio);
+        } catch (errorPdf) {
+          avisar(`El pago se registró, pero no se pudo adjuntar el PDF: ${errorPdf.message}`, 'error');
+        }
+      }
       cerrar();
       avisar(resultado.mensaje);
       alTerminar(resultado);
