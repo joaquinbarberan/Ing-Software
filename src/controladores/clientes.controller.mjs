@@ -1,6 +1,6 @@
 import clienteModelo from '../modelos/clientes.model.mjs';
 import reservaModelo from '../modelos/reservas.model.mjs';
-import { ErrorNegocio, manejar, entero } from '../utilidades/errores.mjs';
+import { ErrorNegocio, manejar, entero, REGEX_NOMBRE } from '../utilidades/errores.mjs';
 
 // Controlador del módulo M2 — Clientes (CU-05 Registrar cliente, CU-06 Consultar historial)
 
@@ -20,6 +20,9 @@ function validarCliente(cuerpo) {
     email: (cuerpo.email || '').trim().toLowerCase()
   };
   if (!datos.nombre || !datos.apellido) throw new ErrorNegocio(400, 'El nombre y el apellido son obligatorios.');
+  if (!REGEX_NOMBRE.test(datos.nombre) || !REGEX_NOMBRE.test(datos.apellido)) {
+    throw new ErrorNegocio(400, 'El nombre y el apellido sólo pueden tener letras, sin números ni símbolos.');
+  }
   if (datos.dni.length < 7 || datos.dni.length > 9) throw new ErrorNegocio(400, 'Ingresá un DNI válido (7 u 8 números).');
   if (!datos.telefono) throw new ErrorNegocio(400, 'El teléfono es obligatorio para poder contactar al cliente.');
   if (datos.email && !REGEX_EMAIL.test(datos.email)) throw new ErrorNegocio(400, 'El correo electrónico no es válido.');

@@ -1,6 +1,6 @@
 import { enTransaccion } from '../conexion.bd.mjs';
 import catalogoModelo from '../modelos/catalogos.model.mjs';
-import { ErrorNegocio, manejar, entero, importe } from '../utilidades/errores.mjs';
+import { ErrorNegocio, manejar, entero, importe, REGEX_NOMBRE } from '../utilidades/errores.mjs';
 
 // Controlador de los catálogos que configura Administración:
 // paquetes, servicios adicionales, insumos y coordinadores.
@@ -100,8 +100,10 @@ const catalogoControlador = {
 
   guardarCoordinador: manejar(async (peticion, respuesta) => {
     const id = peticion.params.id ? entero(peticion.params.id) : null;
+    const nombre = texto(peticion.body.nombre, 'nombre');
+    if (!REGEX_NOMBRE.test(nombre)) throw new ErrorNegocio(400, 'El nombre del coordinador sólo puede tener letras, sin números ni símbolos.');
     const coordinador = await catalogoModelo.guardarCoordinador(id, {
-      nombre: texto(peticion.body.nombre, 'nombre'),
+      nombre,
       telefono: (peticion.body.telefono || '').trim(),
       tarifa_hora: montoValido(peticion.body.tarifa_hora, 'la tarifa por hora'),
       activo: activo(peticion.body.activo)

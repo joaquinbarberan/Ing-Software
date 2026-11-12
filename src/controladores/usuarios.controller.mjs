@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import usuarioModelo from '../modelos/usuarios.model.mjs';
 import { PERFILES } from '../bd/esquema.mjs';
-import { ErrorNegocio, manejar, entero } from '../utilidades/errores.mjs';
+import { ErrorNegocio, manejar, entero, REGEX_NOMBRE } from '../utilidades/errores.mjs';
 
 // Leemos la clave secreta desde las variables de entorno
 const CLAVE_SECRETA = process.env.JWT_SECRETO;
@@ -90,7 +90,7 @@ const usuarioControlador = {
     if (!/^[a-z0-9._-]{3,30}$/.test(nombreUsuario)) {
       throw new ErrorNegocio(400, 'El usuario debe tener entre 3 y 30 caracteres (letras, números, punto o guion).');
     }
-    if (!nombre) throw new ErrorNegocio(400, 'Ingresá el nombre de la persona.');
+    if (!REGEX_NOMBRE.test(nombre)) throw new ErrorNegocio(400, 'Ingresá el nombre de la persona, sólo con letras (sin números ni símbolos).');
     if (!PERFILES.includes(perfil)) throw new ErrorNegocio(400, 'Elegí un perfil válido.');
     if (!contrasena || contrasena.length < LARGO_MINIMO_CONTRASENA) {
       throw new ErrorNegocio(400, `La contraseña debe tener al menos ${LARGO_MINIMO_CONTRASENA} caracteres.`);
@@ -112,7 +112,7 @@ const usuarioControlador = {
     const nombre = (peticion.body.nombre || '').trim();
     const perfil = peticion.body.perfil;
     const activo = peticion.body.activo !== false && peticion.body.activo !== 'false';
-    if (!nombre) throw new ErrorNegocio(400, 'Ingresá el nombre de la persona.');
+    if (!REGEX_NOMBRE.test(nombre)) throw new ErrorNegocio(400, 'Ingresá el nombre de la persona, sólo con letras (sin números ni símbolos).');
     if (!PERFILES.includes(perfil)) throw new ErrorNegocio(400, 'Elegí un perfil válido.');
 
     // Nunca puede quedar el sistema sin un usuario de Gerencia activo

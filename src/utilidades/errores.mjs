@@ -44,6 +44,10 @@ export function importe(valor) {
   return Number.isFinite(numero) ? Math.round(numero * 100) / 100 : NaN;
 }
 
+// Nombres y apellidos de personas: sólo letras (con acentos), espacios, apóstrofo y guion.
+// Sin números ni símbolos. Debe empezar con una letra y tener al menos 2 caracteres.
+export const REGEX_NOMBRE = /^\p{L}[\p{L}' -]{1,99}$/u;
+
 export const REGEX_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 export const REGEX_HORA = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
