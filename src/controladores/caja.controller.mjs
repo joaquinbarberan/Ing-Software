@@ -40,6 +40,10 @@ async function confirmarSiCubreSena(reserva, pagadoAntes, monto, usuarioId, bd) 
   return `Pago registrado. Falta ${formatoPesos(Number(reserva.sena_requerida) - pagado)} para cubrir la seña y confirmar la reserva.`;
 }
 
+async function bloquearReserva(id, bd) {
+  await bd.query('SELECT id FROM reservas WHERE id = $1 FOR UPDATE', [id]);
+}
+
 // Registra en la reserva un pago aprobado de Mercado Pago. Se usa desde el aviso automático (webhook)
 // y desde el botón "Verificar pagos". Si el pago ya estaba registrado, no lo duplica.
 export async function registrarPagoMercadoPago(pagoMp) {
@@ -50,6 +54,8 @@ export async function registrarPagoMercadoPago(pagoMp) {
   if (!(monto > 0)) return { registrado: false, motivo: 'El pago no tiene un monto válido.' };
 
   return enTransaccion(async (bd) => {
+    // Bloquea la reserva: si llegan dos pagos a la vez, el segundo espera y ve el total actualizado
+    await bloquearReserva(reservaId, bd);
     const reserva = await reservaModelo.obtenerPorId(reservaId, bd);
     if (!reserva) return { registrado: false, motivo: 'La reserva no existe.' };
 
@@ -102,6 +108,7 @@ const cajaControlador = {
     let pagoId = null;
 
     await enTransaccion(async (bd) => {
+      await bloquearReserva(id, bd);
       const reserva = await reservaModelo.obtenerPorId(id, bd);
       if (!reserva) throw new ErrorNegocio(404, 'La reserva no existe.');
       if (['cancelada', 'expirada'].includes(reserva.estado)) {
@@ -197,10 +204,14 @@ const cajaControlador = {
   // el pago se vuelve a consultar a Mercado Pago con el token del salón antes de registrarlo.
   // POST /api/mercadopago/webhook?type=payment&data.id=123
   webhookMercadoPago: async (peticion, respuesta) => {
-    const tipo = peticion.query.type || peticion.body?.type;
-    const pagoId = peticion.query['data.id'] || peticion.body?.data?.id;
+    // Formato actual (type + data.id) y formato viejo IPN (topic + id), que Mercado Pago todavía manda
+    const tipo = peticion.query.type || peticion.body?.type || peticion.query.topic || peticion.body?.topic;
+    const pagoId = peticion.query['data.id'] || peticion.body?.data?.id || (tipo === 'payment' ? peticion.query.id : null);
     if (!mercadoPagoConfigurado() || tipo !== 'payment' || !pagoId) return respuesta.sendStatus(200);
-    if (!firmaValida({ firma: peticion.headers['x-signature'], idPedido: peticion.headers['x-request-id'], idDato: pagoId })) {
+    // El formato viejo (IPN) no trae firma. No hace falta: en los dos casos el pago se vuelve a pedir
+    // a Mercado Pago con el token del salón, así que un aviso inventado no puede registrar nada.
+    const formatoViejo = !peticion.query.type && !peticion.body?.type;
+    if (!formatoViejo && !firmaValida({ firma: peticion.headers['x-signature'], idPedido: peticion.headers['x-request-id'], idDato: pagoId })) {
       return respuesta.sendStatus(401);
     }
     try {

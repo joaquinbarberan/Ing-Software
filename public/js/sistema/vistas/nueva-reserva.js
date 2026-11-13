@@ -335,7 +335,7 @@ export default async function vistaNuevaReserva(contenedor, { parametros }) {
           <p>${esc(reserva.paquete_nombre)} · ${reserva.personas_contratadas} personas</p>
           <p>Importe estimado: <strong>${pesos(reserva.importe_estimado)}</strong> · Seña requerida: <strong>${pesos(reserva.sena_requerida)}</strong></p>
           <p>Estado: <span class="etiqueta estado-presenada">Preseñada</span>. La fecha queda tomada por 72 horas hasta registrar la seña.</p>
-          <p class="nota">${reserva.correo?.enviado ? `Se envió el recordatorio a ${esc(reserva.correo.destinatario)}.` : `No se envió recordatorio por correo: ${esc(reserva.correo?.motivo || '')}`}</p>
+          <p class="nota">${reserva.correo?.enviado ? `Se envió el recordatorio a ${esc(reserva.correo.destinatario)}${reserva.correo.copia ? ' (con copia al salón)' : ''}.` : `No se envió recordatorio por correo: ${esc(reserva.correo?.motivo || '')}`}</p>
         </div>
         <div class="acciones">
           <button class="boton boton-secundario" data-imprimir>Imprimir</button>

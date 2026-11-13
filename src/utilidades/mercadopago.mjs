@@ -61,7 +61,9 @@ export async function crearLinkDePago({ reservaId, concepto, monto, vence }) {
     statement_descriptor: 'DIVERTY PARK',
     ...(sitio && {
       notification_url: `${sitio}/api/mercadopago/webhook`,
-      back_urls: { success: `${sitio}/index.html`, pending: `${sitio}/index.html`, failure: `${sitio}/index.html` }
+      back_urls: { success: `${sitio}/index.html?pago=aprobado`, pending: `${sitio}/index.html?pago=pendiente`, failure: `${sitio}/index.html?pago=rechazado` },
+      // Al aprobarse el pago, el cliente vuelve solo al sitio del salón
+      auto_return: 'approved'
     }),
     // El link de la seña vence junto con la reserva preseñada (RN03)
     ...(vence && { expires: true, expiration_date_to: vence.toISOString() })

@@ -225,10 +225,13 @@ export async function recordarPorCorreo(reserva, usuarioId) {
     }
   }
   const resultado = await enviarRecordatorio(reserva, linkPago);
+  const conCopia = resultado.copia && resultado.copia !== resultado.destinatario ? ` Copia al salón (${resultado.copia}).` : '';
   if (resultado.destinatario) {
     await reservaModelo.registrarHistorial(reserva.id, usuarioId, 'correo', resultado.enviado
-      ? `Recordatorio enviado a ${resultado.destinatario}.`
+      ? `Recordatorio enviado a ${resultado.destinatario}.${conCopia}`
       : `No se pudo enviar el recordatorio a ${resultado.destinatario}. ${resultado.motivo}`);
+  } else if (resultado.copia) {
+    await reservaModelo.registrarHistorial(reserva.id, usuarioId, 'correo', resultado.motivo);
   }
   return resultado;
 }

@@ -102,23 +102,37 @@ export function armarRecordatorio(reserva, linkPago = null) {
 
 // Envía el recordatorio. Nunca lanza error: un problema con el correo no puede frenar una reserva.
 // Devuelve { enviado, destinatario, motivo } para informarlo en pantalla y en el historial.
-export async function enviarRecordatorio(reserva, linkPago = null) {
-  const destinatario = reserva.cliente_email;
-  if (!destinatario) return { enviado: false, motivo: 'El cliente no tiene correo cargado.' };
+// El salón recibe una copia de cada recordatorio (MAIL_COPIA, o la misma casilla que envía)
+function casillaDelSalon() {
+  return process.env.MAIL_COPIA || process.env.MAIL_FROM || process.env.SMTP_USER || null;
+}
 
+export async function enviarRecordatorio(reserva, linkPago = null) {
+  const destinatario = reserva.cliente_email || null;
   const servidor = obtenerTransporte();
-  if (!servidor) return { enviado: false, destinatario, motivo: 'El envío de correos no está configurado.' };
+  if (!servidor) {
+    return destinatario
+      ? { enviado: false, destinatario, motivo: 'El envío de correos no está configurado.' }
+      : { enviado: false, motivo: 'El cliente no tiene correo cargado.' };
+  }
+
+  const copia = casillaDelSalon();
+  // Sin correo del cliente, el salón igual recibe el aviso de la reserva nueva
+  if (!destinatario && !copia) return { enviado: false, motivo: 'El cliente no tiene correo cargado.' };
 
   const { asunto, texto, html } = armarRecordatorio(reserva, linkPago);
   try {
     await servidor.sendMail({
       from: `"${process.env.MAIL_REMITENTE || REMITENTE_DEFECTO}" <${process.env.MAIL_FROM || process.env.SMTP_USER}>`,
-      to: destinatario,
-      subject: asunto,
+      to: destinatario || copia,
+      // Copia oculta: el cliente no ve la casilla del salón, y si responde, la respuesta llega al salón
+      ...(destinatario && copia && copia !== destinatario ? { bcc: copia, replyTo: copia } : {}),
+      subject: destinatario ? asunto : `[Sin correo del cliente] ${asunto}`,
       text: texto,
       html
     });
-    return { enviado: true, destinatario };
+    if (!destinatario) return { enviado: false, copia, motivo: 'El cliente no tiene correo cargado. Se envió sólo la copia al salón.' };
+    return { enviado: true, destinatario, copia };
   } catch (error) {
     console.error('No se pudo enviar el recordatorio:', error.message);
     return { enviado: false, destinatario, motivo: 'El servidor de correo no aceptó el envío.' };
